@@ -1,0 +1,12 @@
+\# 🚀 AI SESSION START — LongLineTracker
+
+
+
+\*\*PASTE THIS ENTIRE FILE INTO CHATGPT AS YOUR FIRST MESSAGE\*\*
+
+
+
+\## 📂 PROJECT CONTEXT
+
+
+
