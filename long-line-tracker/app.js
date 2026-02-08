@@ -462,6 +462,8 @@ function loadDashboard() {
 
 function loadAlerts(equipment, maintenance) {
     const alertsList = document.getElementById('alerts-list');
+alertsList.innerHTML = '';
+
     const alerts = [];
     
     // Check for overdue maintenance
