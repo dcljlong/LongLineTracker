@@ -1,41 +1,13 @@
-﻿# 💾 SESSION SAVE — LongLineTracker
-
-Run this ANY time progress is made.
-
----
-
-## 1) LOCAL BACKUP SNAPSHOT
+﻿# 💾 SESSION SAVE
 
 cd D:\LongLineTracker
-
 $stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
-$dest = "D:\LongLineTracker\backups\session_$stamp"
-
-mkdir $dest | Out-Null
-
-robocopy .\long-line-tracker "$dest\long-line-tracker" /E /NFL /NDL /NJH /NJS | Out-Null
-
-echo "Backup saved to:"
-echo $dest
-
----
-
-## 2) GIT SAVE
+$dest  = "D:\LongLineTracker\backups\session_$stamp"
+New-Item -ItemType Directory -Force -Path $dest | Out-Null
+robocopy "." "$dest\repo" /E /NFL /NDL /NJH /NJS | Out-Null
+Write-Host "Backup: $dest"
 
 git add .
 git commit -m "Session save $stamp"
 git push
-
----
-
-## 3) VERIFY CLEAN STATE
-
 git status
-
-Must show:
-
-nothing to commit, working tree clean
-
----
-
-SESSION SAFELY SAVED.

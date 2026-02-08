@@ -1,4 +1,3 @@
-﻿Set-Location "D:\LongLineTracker\long-line-tracker"
-Start-Process ".\index.html"
-Set-Location "D:\LongLineTracker"
+﻿Set-Location "D:\LongLineTracker"
+Start-Process .\long-line-tracker\index.html
 git status
