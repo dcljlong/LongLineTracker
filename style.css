@@ -1,20 +1,36 @@
-﻿body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+﻿/* General Styles */
+body {
+  font-family: 'Inter', sans-serif;
   margin: 0;
-  padding: 0;
-  background: #f4f4f4;
-  color: #333;
+  background-color: #f5f5f5;
 }
-.container {
-  padding: 20px;
-  max-width: 600px;
-  margin: auto;
+
+/* Calendar container */
+#calendar {
+  max-width: 100%;
+  margin: 1rem auto;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-button {
-  padding: 10px 20px;
-  background: #007aff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
+
+/* Calendar page styling */
+#calendar-page {
+  padding: 1.5rem;
+  background: #f5f5f5;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* FullCalendar font override */
+.fc {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  #calendar {
+    padding: 0.5rem;
+  }
 }
