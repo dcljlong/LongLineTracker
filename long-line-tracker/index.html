@@ -1,35 +1,22 @@
 ﻿<!DOCTYPE html>
-<html lang=""en"">
+<html lang='en'>
 <head>
-  <meta charset=""UTF-8"">
-  <title>LongLineTracker</title>
-  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-  <link rel=""stylesheet"" href=""style.css"">
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+  <meta name='apple-mobile-web-app-capable' content='yes'>
+  <meta name='theme-color' content='#ffffff' />
+  <link rel='manifest' href='manifest.json' />
+  <link rel='stylesheet' href='style.css' />
+  <title>Long Line Tracker</title>
 </head>
 <body>
-  <h1>LongLineTracker</h1>
-
-  <section id=""equipment-list""></section>
-  <section id=""overdue-returns""></section>
-
-  <div id=""checkout-modal"" class=""modal hidden"">
-    <h2>Checkout Equipment</h2>
-    <p id=""checkout-equipment-name""></p>
-    <label>
-      Expected Return Date
-      <input type=""date"" id=""checkout-expected-return"">
-    </label>
-    <button id=""confirm-checkout"">Confirm</button>
-    <button id=""cancel-checkout"">Cancel</button>
+  <div class='container'>
+    <h1>Long Line Tracker</h1>
+    <p>Track, measure, and update your workflow.</p>
+    <button onclick='trackLine()'>Track a Line</button>
+    <div id='result'></div>
   </div>
 
-  <div id=""return-modal"" class=""modal hidden"">
-    <h2>Return Equipment</h2>
-    <p id=""return-equipment-name""></p>
-    <button id=""confirm-return"">Confirm Return</button>
-    <button id=""cancel-return"">Cancel</button>
-  </div>
-
-  <script src=""main.js""></script>
+  <script src='main.js'></script>
 </body>
 </html>
