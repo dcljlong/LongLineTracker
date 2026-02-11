@@ -1,3 +1,10 @@
 *.bak*
 __backup/
 backups/
+
+# Ignore backup/temp files
+*.bak*
+__backup/
+backups/
+*.log
+node_modules/
