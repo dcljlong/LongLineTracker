@@ -3,20 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Long Line Tracker - Construction Equipment Management</title>
+  <title>Long Line Tracker</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  <!-- FullCalendar Styles -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 </head>
 <body>
   <div class="app-container">
-    <!-- Sidebar -->
     <nav class="sidebar">
       <div class="sidebar-header">
         <div class="logo">
@@ -25,42 +18,50 @@
         </div>
       </div>
       <ul class="nav-menu">
-        <li class="nav-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></li>
-        <li class="nav-item" data-page="equipment"><i class="fas fa-truck-monster"></i><span>Equipment</span></li>
-        <li class="nav-item" data-page="maintenance"><i class="fas fa-wrench"></i><span>Maintenance</span></li>
-        <li class="nav-item" data-page="inspections"><i class="fas fa-clipboard-check"></i><span>Inspections</span></li>
-        <li class="nav-item" data-page="sites"><i class="fas fa-map-marker-alt"></i><span>Sites</span></li>
-        <li class="nav-item" data-page="scan"><i class="fas fa-qrcode"></i><span>Scan Tool</span></li>
-        <li class="nav-item" data-page="labels"><i class="fas fa-print"></i><span>Print Labels</span></li>
-        <li class="nav-item" data-page="calendar"><i class="fas fa-calendar-alt"></i><span>Calendar</span></li>
+        <li class="nav-item active" data-page="dashboard"><span>Dashboard</span></li>
+        <li class="nav-item" data-page="calendar"><span>Calendar</span></li>
       </ul>
-      <div class="sidebar-footer">
-        <button class="btn-export" onclick="exportData()"><i class="fas fa-download"></i> Export Data</button>
-        <button class="btn-import" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> Import Data</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)" />
-      </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="main-content">
-      <div id="dashboard-page" class="page active">
-        <h1>Welcome to Long Line Tracker</h1>
-      </div>
-
-      <div id="calendar-page" class="page" style="display: none;">
-        <div class="calendar-header">
-          <h2><i class="fas fa-calendar-alt"></i> Equipment Calendar</h2>
-          <p>Track inspections, maintenance, and more</p>
-        </div>
+      <!-- Calendar Page -->
+      <div id="calendar-page" class="page active">
+        <h1>Schedule Calendar</h1>
         <div id="calendar"></div>
       </div>
     </main>
   </div>
 
-  <!-- FullCalendar Script -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
-  <!-- App Logic -->
-  <script type="module" src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        editable: true,
+        selectable: true,
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        dateClick: function (info) {
+          const title = prompt('Enter event title:');
+          if (title) {
+            calendar.addEvent({
+              title: title,
+              start: info.dateStr,
+              allDay: true
+            });
+          }
+        },
+        eventClick: function (info) {
+          if (confirm('Delete this event?')) {
+            info.event.remove();
+          }
+        }
+      });
+      calendar.render();
+    });
+  </script>
 </body>
 </html>
