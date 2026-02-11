@@ -1,8 +1,4 @@
-*.bak*
-__backup/
-backups/
-
-# Ignore backup/temp files
+﻿# Ignore backup and temp files
 *.bak*
 __backup/
 backups/
