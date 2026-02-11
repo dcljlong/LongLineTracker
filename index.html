@@ -7,6 +7,10 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- FullCalendar Styles -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -28,6 +32,7 @@
         <li class="nav-item" data-page="sites"><i class="fas fa-map-marker-alt"></i><span>Sites</span></li>
         <li class="nav-item" data-page="scan"><i class="fas fa-qrcode"></i><span>Scan Tool</span></li>
         <li class="nav-item" data-page="labels"><i class="fas fa-print"></i><span>Print Labels</span></li>
+        <li class="nav-item" data-page="calendar"><i class="fas fa-calendar-alt"></i><span>Calendar</span></li>
       </ul>
       <div class="sidebar-footer">
         <button class="btn-export" onclick="exportData()"><i class="fas fa-download"></i> Export Data</button>
@@ -36,12 +41,26 @@
       </div>
     </nav>
 
-    <!-- Main content is dynamically inserted by JS -->
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div id="dashboard-page" class="page active">
+        <h1>Welcome to Long Line Tracker</h1>
+      </div>
 
+      <div id="calendar-page" class="page" style="display: none;">
+        <div class="calendar-header">
+          <h2><i class="fas fa-calendar-alt"></i> Equipment Calendar</h2>
+          <p>Track inspections, maintenance, and more</p>
+        </div>
+        <div id="calendar"></div>
+      </div>
+    </main>
   </div>
 
-  <!-- Modals and dynamic content sections here (from your full code previously) -->
+  <!-- FullCalendar Script -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
+  <!-- App Logic -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
