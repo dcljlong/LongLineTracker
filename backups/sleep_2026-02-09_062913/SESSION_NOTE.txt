@@ -1,0 +1,5 @@
+﻿STATUS:
+- Overdue returns tile implemented
+- Uses checkout expected return date
+- app.js and index.html committed and pushed
+- Repo clean at sleep time
