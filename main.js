@@ -1,7 +1,7 @@
 ﻿function trackLine() {
   const result = document.getElementById('result');
   const now = new Date().toLocaleString();
-  result.textContent = \Line tracked at \\;
+  result.textContent = Line tracked at ;
 }
 
 if ('serviceWorker' in navigator) {
