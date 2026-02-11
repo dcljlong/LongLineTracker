@@ -1,5 +1,4 @@
 ﻿document.addEventListener("DOMContentLoaded", () => {
-  // Sidebar tab switch logic
   const navItems = document.querySelectorAll(".nav-item");
   const pages = document.querySelectorAll(".page");
 
@@ -19,38 +18,58 @@
   });
 });
 
-// Calendar init
+let calendar;
+
 function initializeCalendar() {
   const calendarEl = document.getElementById("calendar");
 
   if (!calendarEl.dataset.initialized) {
-    const calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: "dayGridMonth",
+      editable: true,
+      selectable: true,
       height: "auto",
       headerToolbar: {
         left: "prev,next today",
         center: "title",
         right: "dayGridMonth,timeGridWeek,listWeek",
       },
-      events: [
-        {
-          title: "Inspection - EXC-001",
-          start: "2026-02-14",
-          color: "#28a745",
-        },
-        {
-          title: "Maintenance - LDR-002",
-          start: "2026-02-17",
-          color: "#ffc107",
-        },
-        {
-          title: "Site Visit - Downtown",
-          start: "2026-02-19",
-          color: "#007bff",
-        },
-      ],
+      events: JSON.parse(localStorage.getItem("calendarEvents") || "[]"),
+      select: function (info) {
+        const title = prompt("Enter event title:");
+        if (title) {
+          const newEvent = {
+            title,
+            start: info.startStr,
+            end: info.endStr,
+            allDay: info.allDay,
+          };
+          calendar.addEvent(newEvent);
+          saveEvents();
+        }
+        calendar.unselect();
+      },
+      eventClick: function (info) {
+        if (confirm(`Delete event "${info.event.title}"?`)) {
+          info.event.remove();
+          saveEvents();
+        }
+      },
+      eventDrop: saveEvents,
+      eventResize: saveEvents,
     });
+
     calendar.render();
     calendarEl.dataset.initialized = "true";
   }
+}
+
+function saveEvents() {
+  const events = calendar.getEvents().map(e => ({
+    title: e.title,
+    start: e.startStr,
+    end: e.endStr,
+    allDay: e.allDay
+  }));
+  localStorage.setItem("calendarEvents", JSON.stringify(events));
 }
