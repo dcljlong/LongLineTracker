@@ -271,7 +271,11 @@ function startCalendar(){
 
   _cal = new FullCalendar.Calendar(calEl, {
     initialView: "dayGridMonth",
-    height: "auto",
+    
+    dayMaxEventRows: true,
+    moreLinkClick: "popover",
+height: "100%",
+    expandRows: true,
     headerToolbar: { left:"prev,next today", center:"title", right:"dayGridMonth,timeGridWeek,timeGridDay" },
     selectable: true,
     editable: true,
@@ -281,14 +285,14 @@ function startCalendar(){
       const t = prompt("Event title:");
       if (t) _cal.addEvent({ title: t, start: info.startStr, end: info.endStr, allDay: info.allDay });
     
-      saveCalEvents(_cal);
+      saveCalEvents(_cal); applyCalendarDensity();
 },
     eventClick(info){
       if (confirm("Delete this event?")) info.event.remove();
     
-      saveCalEvents(_cal);
+      saveCalEvents(_cal); applyCalendarDensity();
 }
-    ,eventChange() { saveCalEvents(_cal); }
+    ,eventChange() { saveCalEvents(_cal); applyCalendarDensity(); }
   });
 
   _cal.render();
@@ -302,5 +306,35 @@ applyBranding();
 
 </body>
 </html>
+
+
+
+<script>
+
+/* ===== Calendar Auto Density Logic ===== */
+function applyCalendarDensity(){
+  if (!_cal) return;
+
+  const calEl = document.querySelector('.fc');
+  if (!calEl) return;
+
+  const total = _cal.getEvents().length;
+
+  calEl.classList.remove('dense','super-dense');
+
+  if (total > 40){
+    calEl.classList.add('super-dense');
+  } else if (total > 20){
+    calEl.classList.add('dense');
+  }
+}
+
+/* Hook into calendar lifecycle */
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => applyCalendarDensity(), 800);
+});
+
+</script>
+
 
 

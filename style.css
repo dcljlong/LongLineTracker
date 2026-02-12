@@ -443,3 +443,61 @@ body{
   border-color: rgba(200,211,196,1);
 }
 
+
+/* ===== Calendar Density Scaling ===== */
+
+/* Default event */
+.fc .fc-event{
+  font-size:12px;
+  padding:2px 8px;
+  border-radius:999px;
+}
+
+/* Slightly smaller when many events exist */
+.fc.dense .fc-event{
+  font-size:10px;
+  padding:1px 6px;
+}
+
+/* Extreme dense mode */
+.fc.super-dense .fc-event{
+  font-size:9px;
+  padding:1px 4px;
+}
+
+/* Reduce line-height for stacked events */
+.fc .fc-event-title{
+  line-height:1.1;
+}
+
+
+/* ===== FullCalendar +more styling ===== */
+.fc .fc-more-link{
+  font-weight:900;
+  color: var(--brand-dark);
+}
+.fc .fc-more-link:hover{
+  text-decoration: underline;
+}
+
+/* ===== Calendar: lock to viewport (no page growth) ===== */
+#calendar-page .calendar-wrap{
+  height: calc(100vh - 210px);   /* header + padding allowance */
+  overflow: auto;
+}
+
+#calendar-page .fc{
+  height: 100%;
+}
+
+#calendar-page .fc-view-harness{
+  height: 100% !important;
+}
+
+/* Mobile tweak */
+@media (max-width: 900px){
+  #calendar-page .calendar-wrap{
+    height: calc(100vh - 260px);
+  }
+}
+
