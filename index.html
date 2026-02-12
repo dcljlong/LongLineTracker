@@ -171,7 +171,18 @@
         </div>
 
         <div class="calendar-wrap">
-          <div id="calendar"></div>
+  <div class="mini-months" aria-label="Mini month ribbon">
+  <button class="mm-nav mm-prev" id="mmPrev" title="Previous month"><i class="fas fa-chevron-left"></i></button>
+
+  <div class="mini-month" id="miniM2" aria-label="Two months back"></div>
+  <div class="mini-month" id="miniM1" aria-label="Previous month"></div>
+  <div class="mini-month is-selected" id="miniM0" aria-label="Selected month"></div>
+  <div class="mini-month" id="miniP1" aria-label="Next month"></div>
+  <div class="mini-month" id="miniP2" aria-label="Two months ahead"></div>
+
+  <button class="mm-nav mm-next" id="mmNext" title="Next month"><i class="fas fa-chevron-right"></i></button>
+</div>
+<div id="calendar"></div>
         </div>
       </section>
 
@@ -265,12 +276,150 @@ function saveCalEvents(cal){
 }
 /* ===== end persistence ===== */
 
+/* ===== Mini month previews logic ===== */
+function gotoMainDate(dt){ if(!_cal) return; gotoMainDate(dt); if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths, 0); } }
+
+function renderMiniMonth(containerId, year, monthIndex, focusDate){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+
+  const monthStart = new Date(year, monthIndex, 1);
+  const monthEnd = new Date(year, monthIndex + 1, 0);
+  const today = new Date();
+
+  const titleFmt = new Intl.DateTimeFormat(undefined, { month:"long", year:"numeric" });
+  const dow = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  // start grid on Sunday
+  const gridStart = new Date(year, monthIndex, 1);
+  gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+
+  let html = '';
+  html += '<div class="mm-head">';
+  html += '  <div class="mm-title" data-goto="' + monthStart.toISOString() + '">' + titleFmt.format(monthStart) + '</div>';
+  html += '</div>';
+  html += '<table><thead><tr>' + dow.map(d => '<th>'+d.substring(0,2)+'</th>').join('') + '</tr></thead><tbody>';
+
+  let cur = new Date(gridStart);
+  for(let wk=0; wk<6; wk++){
+    html += '<tr>';
+    for(let d=0; d<7; d++){
+      const inMonth = (cur.getMonth() === monthIndex);
+      const isOut = !inMonth;
+      const isToday = cur.toDateString() === today.toDateString();
+      const isFocus = focusDate && cur.toDateString() === focusDate.toDateString();
+
+      const cls = [
+        isOut ? "is-out" : "",
+        isToday ? "is-today" : "",
+        isFocus ? "is-focus" : ""
+      ].filter(Boolean).join(" ");
+
+      const iso = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate()).toISOString();
+
+      if(isOut){
+        html += '<td class="'+cls+'">' + cur.getDate() + '</td>';
+      }else{
+        html += '<td class="'+cls+'" data-goto="' + iso + '">' + cur.getDate() + '</td>';
+      }
+      cur.setDate(cur.getDate()+1);
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+
+  el.innerHTML = html;
+
+  // click to goto date
+  el.querySelectorAll('[data-goto]').forEach(n => {
+    n.addEventListener('click', () => {
+      if(!_cal) return;
+      const dt = new Date(n.getAttribute('data-goto'));
+      gotoMainDate(dt);
+    
+      if (typeof updateMiniMonths === "function") { updateMiniMonths(); }
+});
+  });
+}
+
+function updateMiniMonths(){
+  if(!_cal) return;
+
+  const focus = _cal.getDate();
+  const y = focus.getFullYear();
+  const m = focus.getMonth();
+
+  // clear selected state
+  ["miniM2","miniM1","miniM0","miniP1","miniP2"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove("is-selected");
+  });
+  const center=document.getElementById("miniM0");
+  if(center) center.classList.add("is-selected");
+
+  const slots = [
+    { id:"miniM2", off:-2 },
+    { id:"miniM1", off:-1 },
+    { id:"miniM0", off: 0 },
+    { id:"miniP1", off: 1 },
+    { id:"miniP2", off: 2 }
+  ];
+
+  slots.forEach(s=>{
+    const dt = new Date(y, m + s.off, 1);
+    renderMiniMonth(s.id, dt.getFullYear(), dt.getMonth(), focus);
+  });
+}
+
+// ribbon nav buttons move the MAIN calendar month
+function wireMiniMonthNav(){
+  const prev = document.getElementById("mmPrev");
+  const next = document.getElementById("mmNext");
+  if(prev && !prev.dataset.wired){
+    prev.addEventListener("click", ()=>{
+      if(!_cal) return;
+      const f=_cal.getDate();
+      _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()-1, 1));
+    if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths,0); }});
+    prev.dataset.wired="1";
+  }
+  if(next && !next.dataset.wired){
+    next.addEventListener("click", ()=>{
+      if(!_cal) return;
+      const f=_cal.getDate();
+      _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()+1, 1));
+    if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths,0); }});
+    next.dataset.wired="1";
+  }
+
+  // optional wheel scroll on ribbon
+  const ribbon = document.querySelector(".mini-months");
+  if(ribbon && !ribbon.dataset.wired){
+    let t=0;
+    ribbon.addEventListener("wheel",(e)=>{
+      if(Math.abs(e.deltaY) < 5) return;
+      e.preventDefault();
+      const now=Date.now();
+      if(now - t < 250) return;
+      t = now;
+      const f=_cal?.getDate?.();
+      if(!f) return;
+      const dir = e.deltaY > 0 ? 1 : -1;
+      _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()+dir, 1));
+    if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths,0); }},{passive:false});
+    ribbon.dataset.wired="1";
+  }
+}
+/* ===== end mini months ===== */
+
 function startCalendar(){
   const calEl = document.getElementById("calendar");
   if (!calEl || _cal) return;
 
   _cal = new FullCalendar.Calendar(calEl, {
-    initialView: "dayGridMonth",
+    
+    datesSet() { if(typeof updateMiniMonths==="function"){ updateMiniMonths(); } },
+initialView: "dayGridMonth",
     
     dayMaxEventRows: true,
     moreLinkClick: "popover",
@@ -297,7 +446,12 @@ height: "100%",
 
   _cal.render();
 
-  const btnToday = document.getElementById("btnToday");
+  
+  
+  if (typeof wireMiniMonthNav === "function") { wireMiniMonthNav(); }
+  if (typeof updateMiniMonths === "function") { updateMiniMonths(); }
+if (typeof updateMiniMonths === "function") { updateMiniMonths(); setTimeout(updateMiniMonths, 50); }
+const btnToday = document.getElementById("btnToday");
   if (btnToday) btnToday.addEventListener("click", () => _cal.today());
 }
 
@@ -335,6 +489,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

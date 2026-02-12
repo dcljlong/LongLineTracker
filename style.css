@@ -501,3 +501,141 @@ body{
   }
 }
 
+
+/* ===== Mini month previews (prev/next) ===== */
+.mini-months{
+  display:flex;
+  gap:12px;
+  margin:0 0 12px;
+  align-items:stretch;
+}
+.mini-month{
+  flex:0 0 240px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,0.85);
+  padding:10px 10px 8px;
+  box-shadow:0 10px 18px rgba(17,24,39,0.06);
+}
+.mini-month .mm-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+.mini-month .mm-title{
+  font-weight:900;
+  font-size:12px;
+  color:var(--text);
+  cursor:pointer;
+}
+.mini-month .mm-title:hover{ text-decoration:underline; }
+
+.mini-month table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+.mini-month th{
+  font-size:10px;
+  color:var(--muted);
+  font-weight:900;
+  padding:3px 0;
+  text-align:center;
+}
+.mini-month td{
+  text-align:center;
+  padding:2px 0;
+  font-size:10px;
+  color:var(--text);
+  border-radius:8px;
+  cursor:pointer;
+}
+.mini-month td.is-out{ color:rgba(55,65,81,0.35); cursor:default; }
+.mini-month td.is-today{ outline:2px solid rgba(124,194,66,0.55); }
+.mini-month td.is-focus{
+  background:rgba(124,194,66,0.18);
+  font-weight:900;
+}
+.mini-month td:hover:not(.is-out){
+  background:rgba(17,24,39,0.06);
+}
+
+/* Responsive: stack minis */
+@media (max-width: 1100px){
+  .mini-months{ flex-wrap:wrap; }
+  .mini-month{ flex:1 1 260px; }
+}
+
+
+/* ===== 5-month mini ribbon ===== */
+.mini-months{
+  display:flex;
+  align-items:stretch;
+  gap:10px;
+  margin:0 0 12px;
+  overflow:hidden;
+}
+
+.mm-nav{
+  width:44px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  border-radius:14px;
+  box-shadow:0 10px 18px rgba(17,24,39,0.06);
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  color:var(--text);
+  font-weight:900;
+}
+.mm-nav:hover{ border-color: rgba(124,194,66,0.55); }
+
+.mini-month{
+  flex:1 1 0;
+  min-width:170px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,0.85);
+  padding:10px 10px 8px;
+  box-shadow:0 10px 18px rgba(17,24,39,0.06);
+  transform:scale(0.96);
+  opacity:0.92;
+  transition:transform .12s ease, opacity .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+
+.mini-month.is-selected{
+  transform:scale(1.02);
+  opacity:1;
+  border-color: rgba(124,194,66,0.60);
+  box-shadow:0 16px 28px rgba(17,24,39,0.12);
+}
+
+.mini-month .mm-title{
+  font-weight:900;
+  font-size:12px;
+  color:var(--text);
+  cursor:pointer;
+}
+.mini-month .mm-title:hover{ text-decoration:underline; }
+
+.mini-month table{ width:100%; border-collapse:collapse; table-layout:fixed; }
+.mini-month th{
+  font-size:10px; color:var(--muted); font-weight:900; padding:3px 0; text-align:center;
+}
+.mini-month td{
+  text-align:center; padding:2px 0; font-size:10px; color:var(--text);
+  border-radius:8px; cursor:pointer;
+}
+.mini-month td.is-out{ color:rgba(55,65,81,0.35); cursor:default; }
+.mini-month td.is-today{ outline:2px solid rgba(124,194,66,0.55); }
+.mini-month td.is-focus{ background:rgba(124,194,66,0.18); font-weight:900; }
+.mini-month td:hover:not(.is-out){ background:rgba(17,24,39,0.06); }
+
+/* Responsive: hide outer minis on small screens */
+@media (max-width: 1100px){
+  #miniM2,#miniP2{ display:none; }
+}
+@media (max-width: 850px){
+  #miniM1,#miniP1{ display:none; }
+}
