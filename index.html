@@ -5,27 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Long Line Tracker</title>
 
-  <!-- Favicon (optional, quiets the 404 error) -->
+  <!-- Favicon (prevents GitHub Pages 404) -->
   <link rel="icon" href="./favicon.ico" />
 
-  <!-- Your Custom CSS -->
+  <!-- Your CSS -->
   <link rel="stylesheet" href="./style.css" />
 
-  <!-- FullCalendar CSS (correct CDN) -->
+  <!-- FullCalendar CSS -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
 
-  <!-- Font Awesome (icons) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </head>
 <body>
+
   <div class="app-container">
-    <!-- Sidebar -->
     <nav class="sidebar">
       <div class="sidebar-header">
-        <div class="logo">
-          <i class="fas fa-hard-hat"></i>
-          <span>Long Line Tracker</span>
-        </div>
+        <i class="fas fa-hard-hat"></i>
+        <span>Long Line Tracker</span>
       </div>
       <ul class="nav-menu">
         <li class="nav-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></li>
@@ -33,37 +31,36 @@
       </ul>
     </nav>
 
-    <!-- Main Content -->
     <main class="main-content">
       <div id="dashboard-page" class="page active">
         <h2>Dashboard</h2>
         <p>This is your dashboard.</p>
       </div>
 
-      <div id="calendar-page" class="page" style="display:none;">
+      <div id="calendar-page" class="page" style="display: none;">
         <h2><i class="fas fa-calendar-alt"></i> Schedule Calendar</h2>
         <div id="calendar"></div>
       </div>
     </main>
   </div>
 
-  <!-- FullCalendar JS (correct CDN) -->
+  <!-- FullCalendar JS -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
-  <!-- Navigation and Calendar Logic -->
+  <!-- Navigation & Calendar Initialization -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", function () {
       const navItems = document.querySelectorAll(".nav-item");
       const pages = document.querySelectorAll(".page");
 
       navItems.forEach(item => {
-        item.addEventListener("click", () => {
-          const target = item.getAttribute("data-page") + "-page";
+        item.addEventListener("click", function () {
+          const target = this.getAttribute("data-page") + "-page";
 
           navItems.forEach(i => i.classList.remove("active"));
           pages.forEach(p => p.style.display = "none");
 
-          item.classList.add("active");
+          this.classList.add("active");
           document.getElementById(target).style.display = "block";
 
           if (target === "calendar-page") {
@@ -71,11 +68,16 @@
           }
         });
       });
+
+      // If user lands on calendar directly (optional)
+      if (location.hash === "#calendar") {
+        document.querySelector('[data-page="calendar"]').click();
+      }
     });
 
     function initializeCalendar() {
       const calendarEl = document.getElementById("calendar");
-      if (!calendarEl.dataset.initialized) {
+      if (!calendarEl.dataset.init) {
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: "dayGridMonth",
           editable: true,
@@ -85,7 +87,7 @@
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay"
           },
-          select: function(info) {
+          select: function (info) {
             const title = prompt("Event title:");
             if (title) {
               calendar.addEvent({
@@ -97,14 +99,14 @@
             }
             calendar.unselect();
           },
-          eventClick: function(info) {
+          eventClick: function (info) {
             if (confirm("Delete this event?")) {
               info.event.remove();
             }
           }
         });
         calendar.render();
-        calendarEl.dataset.initialized = "true";
+        calendarEl.dataset.init = "true";
       }
     }
   </script>
