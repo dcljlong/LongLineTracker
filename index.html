@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Long Line Tracker</title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+  <!-- Favicon (optional, quiets the 404 error) -->
+  <link rel="icon" href="./favicon.ico" />
 
-  <!-- Custom CSS -->
+  <!-- Your Custom CSS -->
   <link rel="stylesheet" href="./style.css" />
 
-  <!-- FullCalendar -->
+  <!-- FullCalendar CSS (correct CDN) -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
 
-  <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <div class="app-container">
@@ -39,6 +39,7 @@
         <h2>Dashboard</h2>
         <p>This is your dashboard.</p>
       </div>
+
       <div id="calendar-page" class="page" style="display:none;">
         <h2><i class="fas fa-calendar-alt"></i> Schedule Calendar</h2>
         <div id="calendar"></div>
@@ -46,7 +47,7 @@
     </main>
   </div>
 
-  <!-- FullCalendar Script -->
+  <!-- FullCalendar JS (correct CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
   <!-- Navigation and Calendar Logic -->
@@ -65,7 +66,9 @@
           item.classList.add("active");
           document.getElementById(target).style.display = "block";
 
-          if (target === "calendar-page") initializeCalendar();
+          if (target === "calendar-page") {
+            initializeCalendar();
+          }
         });
       });
     });
