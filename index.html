@@ -5,20 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Long Line Tracker</title>
 
-  <!-- Favicon (prevents GitHub Pages 404) -->
-  <link rel="icon" href="./favicon.ico" />
+  <!-- Prevent 404 -->
+  <link rel="icon" href="favicon.ico" />
 
-  <!-- Your CSS -->
-  <link rel="stylesheet" href="./style.css" />
-
-  <!-- FullCalendar CSS -->
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
-
-  <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </head>
 <body>
-
   <div class="app-container">
     <nav class="sidebar">
       <div class="sidebar-header">
@@ -36,18 +31,16 @@
         <h2>Dashboard</h2>
         <p>This is your dashboard.</p>
       </div>
-
-      <div id="calendar-page" class="page" style="display: none;">
+      <div id="calendar-page" class="page" style="display:none;">
         <h2><i class="fas fa-calendar-alt"></i> Schedule Calendar</h2>
         <div id="calendar"></div>
       </div>
     </main>
   </div>
 
-  <!-- FullCalendar JS -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
-  <!-- Navigation & Calendar Initialization -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const navItems = document.querySelectorAll(".nav-item");
@@ -55,7 +48,7 @@
 
       navItems.forEach(item => {
         item.addEventListener("click", function () {
-          const target = this.getAttribute("data-page") + "-page";
+          const target = item.getAttribute("data-page") + "-page";
 
           navItems.forEach(i => i.classList.remove("active"));
           pages.forEach(p => p.style.display = "none");
@@ -68,11 +61,6 @@
           }
         });
       });
-
-      // If user lands on calendar directly (optional)
-      if (location.hash === "#calendar") {
-        document.querySelector('[data-page="calendar"]').click();
-      }
     });
 
     function initializeCalendar() {
@@ -80,13 +68,13 @@
       if (!calendarEl.dataset.init) {
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: "dayGridMonth",
-          editable: true,
-          selectable: true,
           headerToolbar: {
             left: "prev,next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay"
           },
+          selectable: true,
+          editable: true,
           select: function (info) {
             const title = prompt("Event title:");
             if (title) {
