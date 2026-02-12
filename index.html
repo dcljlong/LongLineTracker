@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -235,6 +235,36 @@ document.addEventListener("click", (e) => {
   if (railBtn && railBtn.dataset.page) setActivePage(railBtn.dataset.page);
 });
 
+/* ===== Calendar persistence (LocalStorage) ===== */
+const CAL_STORAGE_KEY = "LLT_CAL_EVENTS_V1";
+
+function loadCalEvents(){
+  try{
+    const raw = localStorage.getItem(CAL_STORAGE_KEY);
+    if(!raw) return [];
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveCalEvents(cal){
+  try{
+    const events = cal.getEvents().map(ev => ({
+      id: ev.id || undefined,
+      title: ev.title || "",
+      start: ev.start ? ev.start.toISOString() : null,
+      end: ev.end ? ev.end.toISOString() : null,
+      allDay: !!ev.allDay
+    }));
+    localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify(events));
+  }catch(e){
+    // no-op
+  }
+}
+/* ===== end persistence ===== */
+
 function startCalendar(){
   const calEl = document.getElementById("calendar");
   if (!calEl || _cal) return;
@@ -246,13 +276,19 @@ function startCalendar(){
     selectable: true,
     editable: true,
     nowIndicator: true,
+    events: loadCalEvents(),
     select(info){
       const t = prompt("Event title:");
       if (t) _cal.addEvent({ title: t, start: info.startStr, end: info.endStr, allDay: info.allDay });
-    },
+    
+      saveCalEvents(_cal);
+},
     eventClick(info){
       if (confirm("Delete this event?")) info.event.remove();
-    }
+    
+      saveCalEvents(_cal);
+}
+    ,eventChange() { saveCalEvents(_cal); }
   });
 
   _cal.render();
@@ -266,3 +302,5 @@ applyBranding();
 
 </body>
 </html>
+
+
