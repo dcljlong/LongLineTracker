@@ -13,6 +13,7 @@
 <body>
 
 <div class="app-container">
+
 <nav class="sidebar">
 <div class="sidebar-header">
 <i class="fas fa-hard-hat"></i><span>Long Line Tracker</span>
@@ -25,10 +26,56 @@
 
 <main class="main-content">
 
-<div id="dashboard-page" class="page active">
-<h2><i class="fas fa-chart-pie"></i> Dashboard</h2>
+<!-- COMMAND BAR -->
+<div class="command-bar">
+<div class="command-left">
+<h1>Ceilings Unlimited</h1>
+<span id="liveDate"></span>
+</div>
 
-<div class="status-grid">
+<div class="command-right">
+<div class="mini-kpi">
+<span class="mini-number">0</span>
+<span>Total Assets</span>
+</div>
+<div class="mini-kpi warning">
+<span class="mini-number">0</span>
+<span>Return Due</span>
+</div>
+<div class="mini-kpi danger">
+<span class="mini-number">0</span>
+<span>Overdue</span>
+</div>
+</div>
+</div>
+
+<div id="dashboard-page" class="page active">
+
+<!-- KPI ROW -->
+<div class="kpi-row">
+<div class="kpi-card">
+<div class="kpi-number">0</div>
+<div class="kpi-label">Total Equipment</div>
+</div>
+
+<div class="kpi-card">
+<div class="kpi-number">0</div>
+<div class="kpi-label">Active Checkouts</div>
+</div>
+
+<div class="kpi-card warning">
+<div class="kpi-number">0</div>
+<div class="kpi-label">Due This Week</div>
+</div>
+
+<div class="kpi-card danger">
+<div class="kpi-number">0</div>
+<div class="kpi-label">Overdue</div>
+</div>
+</div>
+
+<!-- STATUS BOARD -->
+<div class="status-board">
 
 <div class="status-column available">
 <div class="column-header">Available <span class="count">0</span></div>
@@ -54,7 +101,7 @@
 </div>
 
 <div id="calendar-page" class="page" style="display:none;">
-<h2><i class="fas fa-calendar-alt"></i> Schedule Calendar</h2>
+<h2>Schedule Calendar</h2>
 <div class="calendar-card">
 <div id="calendar"></div>
 </div>
@@ -66,6 +113,13 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
+function updateClock(){
+const now=new Date();
+document.getElementById("liveDate").innerText=now.toLocaleString();
+}
+setInterval(updateClock,1000);
+updateClock();
+
 document.addEventListener("click", function(e) {
 if (e.target.matches(".nav-item")) {
 document.querySelectorAll(".nav-item").forEach(i=>i.classList.remove("active"));
@@ -79,20 +133,13 @@ startCalendar();
 });
 
 function startCalendar() {
-const calEl = document.getElementById("calendar");
-if (!calEl.dataset.init) {
-const cal = new FullCalendar.Calendar(calEl, {
-initialView: "dayGridMonth",
-headerToolbar: { left:"prev,next today", center:"title", right:"dayGridMonth,timeGridWeek,timeGridDay" },
+const calEl=document.getElementById("calendar");
+if(!calEl.dataset.init){
+const cal=new FullCalendar.Calendar(calEl,{
+initialView:"dayGridMonth",
+headerToolbar:{left:"prev,next today",center:"title",right:"dayGridMonth,timeGridWeek,timeGridDay"},
 selectable:true,
 editable:true,
-select(info) {
-const t=prompt("Event title:");
-if(t) cal.addEvent({ title:t, start:info.startStr, end:info.endStr, allDay:info.allDay });
-},
-eventClick(info) {
-if(confirm("Delete?")) info.event.remove();
-}
 });
 cal.render();
 calEl.dataset.init="1";
