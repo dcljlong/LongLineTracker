@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -16,18 +16,27 @@
 
   <!-- Slim rail -->
   <aside class="rail">
-    <div class="rail-logo" title="Long Line Tracker">
-      <i class="fas fa-hard-hat"></i>
+
+    <!-- DEV MARK (max for column, independent from green) -->
+    <div class="rail-dev" title="Long Line Tracker">
+      <img class="rail-dev-logo" src="./app-logo.png" alt="Long Line Tracker logo" />
+      <div class="rail-dev-name">LLT</div>
     </div>
-    <button class="rail-btn is-active" data-page="dashboard" title="Dashboard">
-      <i class="fas fa-chart-pie"></i>
+
+    <!-- HOME BUTTON (green hardhat = Dashboard) -->
+    <button class="rail-home is-active" data-page="dashboard" title="Home / Dashboard">
+      <i class="fas fa-hard-hat"></i>
     </button>
+
+    <!-- Only ONE extra nav item in rail: Calendar (remove duplicate Dashboard button) -->
     <button class="rail-btn" data-page="calendar" title="Calendar">
       <i class="fas fa-calendar-alt"></i>
     </button>
+
     <div class="rail-spacer"></div>
+
     <div class="rail-badge" title="Company">
-      <span id="railBadge">CO</span>
+      <span id="railBadge">CU</span>
     </div>
   </aside>
 
@@ -36,16 +45,14 @@
     <!-- Top header -->
     <header class="topbar">
 
-      <!-- Company logo only (no text) -->
+      <!-- Company logo only (tight frame) -->
       <div class="topbar-left">
-        <div class="brand">
-          <div class="company-logo-wrap" aria-label="Company logo">
-            <img id="companyLogo" class="company-logo" src="./company-logo.png" alt="Company logo" />
-            <div id="companyLogoFallback" class="company-logo-fallback" aria-hidden="true"></div>
-          </div>
+        <div class="company-logo-wrap" aria-label="Company logo">
+          <img id="companyLogo" class="company-logo" src="./company-logo.png" alt="Company logo" />
         </div>
       </div>
 
+      <!-- Primary navigation (single source of truth for tabs) -->
       <nav class="top-tabs" role="tablist" aria-label="Primary navigation">
         <button class="tab is-active" data-page="dashboard">
           <i class="fas fa-chart-pie"></i><span>Dashboard</span>
@@ -61,16 +68,7 @@
           <span id="liveDate">--</span>
         </div>
 
-        <!-- Developer credit -->
-        <div class="dev-credit" title="Developer / App">
-          <img id="appLogo" class="app-logo" src="./app-logo.png" alt="Long Line Tracker logo" />
-          <div class="dev-text">
-            <div class="dev-name">Long Line Tracker</div>
-            <div class="dev-sub">by Davy</div>
-          </div>
-        </div>
-
-        <div class="header-kpis">
+        <div class="header-kpis" aria-label="Header KPIs">
           <div class="hkpi">
             <div class="hkpi-num" id="hk_total">0</div>
             <div class="hkpi-lbl">Assets</div>
@@ -186,8 +184,7 @@
 <script>
 const BRANDING = {
   railBadge: "CU",
-  companyLogoPath: "./company-logo.png",
-  appLogoPath: "./app-logo.png"
+  companyLogoPath: "./company-logo.png"
 };
 
 let _cal = null;
@@ -195,7 +192,19 @@ let _cal = null;
 function updateClock(){
   const now = new Date();
   const el = document.getElementById("liveDate");
-  if (el) el.textContent = now.toLocaleString();
+  if (!el) return;
+
+  const fmt = new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  el.textContent = fmt.format(now);
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -205,22 +214,7 @@ function applyBranding(){
   if (rb) rb.textContent = BRANDING.railBadge || "CO";
 
   const cLogo = document.getElementById("companyLogo");
-  const cFallback = document.getElementById("companyLogoFallback");
-  if (cLogo){
-    cLogo.src = BRANDING.companyLogoPath;
-    cLogo.addEventListener("error", () => {
-      cLogo.style.display = "none";
-      if (cFallback) cFallback.style.display = "block";
-    }, { once:true });
-  }
-
-  const aLogo = document.getElementById("appLogo");
-  if (aLogo){
-    aLogo.src = BRANDING.appLogoPath;
-    aLogo.addEventListener("error", () => {
-      aLogo.style.display = "none";
-    }, { once:true });
-  }
+  if (cLogo) cLogo.src = BRANDING.companyLogoPath;
 }
 
 function setActivePage(page){
@@ -229,15 +223,16 @@ function setActivePage(page){
 
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
   document.querySelectorAll(".rail-btn").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
+  document.querySelectorAll(".rail-home").forEach(b => b.classList.toggle("is-active", page === "dashboard"));
 
   if (page === "calendar") startCalendar();
 }
 
 document.addEventListener("click", (e) => {
   const tab = e.target.closest(".tab");
-  const rail = e.target.closest(".rail-btn");
+  const railBtn = e.target.closest("button");
   if (tab && tab.dataset.page) setActivePage(tab.dataset.page);
-  if (rail && rail.dataset.page) setActivePage(rail.dataset.page);
+  if (railBtn && railBtn.dataset.page) setActivePage(railBtn.dataset.page);
 });
 
 function startCalendar(){
