@@ -26,8 +26,8 @@
       <i class="fas fa-calendar-alt"></i>
     </button>
     <div class="rail-spacer"></div>
-    <div class="rail-badge" title="Ceilings Unlimited">
-      <span>CU</span>
+    <div class="rail-badge" title="Company">
+      <span id="railBadge">CO</span>
     </div>
   </aside>
 
@@ -37,10 +37,15 @@
     <header class="topbar">
       <div class="topbar-left">
         <div class="brand">
-          <div class="brand-mark"></div>
+          <!-- Logo slot (drop any logo file at ./company-logo.png) -->
+          <div class="brand-logo-wrap" aria-label="Company logo">
+            <img id="companyLogo" class="brand-logo" src="./company-logo.png" alt="Company logo" />
+            <div id="brandMarkFallback" class="brand-mark" aria-hidden="true"></div>
+          </div>
+
           <div class="brand-text">
-            <div class="brand-title">Ceilings Unlimited</div>
-            <div class="brand-subtitle">Long Line Tracker</div>
+            <div class="brand-title" id="companyName">Company</div>
+            <div class="brand-subtitle" id="appName">Long Line Tracker</div>
           </div>
         </div>
       </div>
@@ -154,7 +159,7 @@
 
         <div class="empty-note">
           <i class="fas fa-circle-info"></i>
-          <span>Next phase: connect real asset data into these columns + KPIs. Layout is now production-grade.</span>
+          <span id="footerCredit">Long Line Tracker</span>
         </div>
       </section>
 
@@ -179,7 +184,41 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
+/* === BRAND CONFIG (swap any company without redesign) === */
+const BRANDING = {
+  companyName: "Ceilings Unlimited",
+  appName: "Long Line Tracker",
+  logoPath: "./company-logo.png",   // drop any logo file at repo root using this name
+  railBadge: "CU"
+};
+
 let _cal = null;
+
+function applyBranding(){
+  const cn = document.getElementById("companyName");
+  const an = document.getElementById("appName");
+  const rb = document.getElementById("railBadge");
+  const fc = document.getElementById("footerCredit");
+
+  if (cn) cn.textContent = BRANDING.companyName;
+  if (an) an.textContent = BRANDING.appName;           // keeps developer/app name visible
+  if (rb) rb.textContent = BRANDING.railBadge || "CO";
+  if (fc) fc.textContent = `${BRANDING.appName} — internal tool`;
+
+  const logo = document.getElementById("companyLogo");
+  const fallback = document.getElementById("brandMarkFallback");
+  if (logo){
+    logo.src = BRANDING.logoPath;
+    logo.addEventListener("error", () => {
+      logo.style.display = "none";
+      if (fallback) fallback.style.display = "block";
+    }, { once: true });
+    logo.addEventListener("load", () => {
+      logo.style.display = "block";
+      if (fallback) fallback.style.display = "none";
+    }, { once: true });
+  }
+}
 
 function updateClock(){
   const now = new Date();
@@ -213,7 +252,7 @@ function startCalendar(){
   _cal = new FullCalendar.Calendar(calEl, {
     initialView: "dayGridMonth",
     height: "auto",
-    headerToolbar: { left:"prev,next", center:"title", right:"dayGridMonth,timeGridWeek,timeGridDay" },
+    headerToolbar: { left:"prev,next today", center:"title", right:"dayGridMonth,timeGridWeek,timeGridDay" },
     selectable: true,
     editable: true,
     nowIndicator: true,
@@ -231,6 +270,8 @@ function startCalendar(){
   const btnToday = document.getElementById("btnToday");
   if (btnToday) btnToday.addEventListener("click", () => _cal.today());
 }
+
+applyBranding();
 </script>
 
 </body>
