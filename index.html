@@ -4,10 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Long Line Tracker</title>
+
+  <!-- Your existing CSS -->
   <link rel="stylesheet" href="style.css" />
 
   <!-- FullCalendar CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
 
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -28,7 +30,6 @@
       </ul>
     </nav>
 
-    <!-- Main Content -->
     <main class="main-content">
       <div id="dashboard-page" class="page active">
         <h2>Dashboard</h2>
@@ -43,10 +44,9 @@
   </div>
 
   <!-- FullCalendar JS -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
   <script>
-    // Tab navigation logic
     document.addEventListener("DOMContentLoaded", () => {
       const navItems = document.querySelectorAll(".nav-item");
       const pages = document.querySelectorAll(".page");
@@ -66,7 +66,6 @@
       });
     });
 
-    // Initialize FullCalendar
     function initializeCalendar() {
       const calendarEl = document.getElementById("calendar");
       if (!calendarEl.dataset.initialized) {
