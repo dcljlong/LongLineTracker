@@ -1,4 +1,16 @@
-﻿<!DOCTYPE html>
+﻿cd D:\LongLineTracker
+
+# BACKUP before overwrite
+$stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
+$bakDir = "D:\LongLineTracker\_backups\return_workflow_step3_$stamp"
+New-Item -ItemType Directory -Force -Path $bakDir | Out-Null
+Copy-Item .\index.html (Join-Path $bakDir "index.html") -Force
+Test-Path (Join-Path $bakDir "index.html")
+
+# OVERWRITE index.html (Return workflow)
+$path = "D:\LongLineTracker\index.html"
+$c = @'
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -67,6 +79,11 @@
   background:#7CC242;
   color:#0b0b0b;
 }
+.modal .btn.danger{
+  border:none;
+  background:#ff6b6b;
+  color:#1a0a0a;
+}
 .modal .hint{
   margin-top:8px;
   min-height:18px;
@@ -77,6 +94,7 @@
   margin-top:10px;
   display:flex;
   gap:8px;
+  flex-wrap:wrap;
 }
 .card .mini-btn{
   padding:6px 10px;
@@ -87,6 +105,10 @@
   font-weight:800;
   cursor:pointer;
   font-size:12px;
+}
+.card .mini-btn.return{
+  background: rgba(255,107,107,.16);
+  color:#4c0f0f;
 }
 .card .mini-btn:active{ transform: translateY(1px); }
 </style>
@@ -164,6 +186,43 @@
     </div>
 
     <div class="hint" id="checkoutHint"></div>
+  </div>
+</div>
+
+<!-- RETURN MODAL -->
+<div id="returnBackdrop" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Return asset">
+    <h3>
+      <span><i class="fas fa-rotate-left"></i> Return Asset</span>
+      <button class="x" id="returnClose" title="Close"><i class="fas fa-xmark"></i></button>
+    </h3>
+
+    <div style="color:#cfcfcf;font-size:12px;margin-bottom:10px;">
+      <span style="opacity:.85;">Asset:</span> <strong id="rtAssetLabel" style="color:#fff;">--</strong>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="rtCond">Return condition</label>
+        <input id="rtCond" type="text" placeholder="e.g., Good / Needs repair" />
+      </div>
+      <div class="field">
+        <label for="rtAt">Returned at</label>
+        <input id="rtAt" type="text" disabled />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="rtNotes">Return notes</label>
+      <textarea id="rtNotes" placeholder="What changed? Damage? Missing parts? Who returned it?"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="returnCancel" type="button">Cancel</button>
+      <button class="btn danger" id="returnSave" type="button">Save Return</button>
+    </div>
+
+    <div class="hint" id="returnHint"></div>
   </div>
 </div>
 
@@ -467,6 +526,20 @@ const co = {
 };
 let _checkoutContext = null;
 
+/* return modal refs */
+const rt = {
+  backdrop: document.getElementById("returnBackdrop"),
+  close: document.getElementById("returnClose"),
+  cancel: document.getElementById("returnCancel"),
+  save: document.getElementById("returnSave"),
+  hint: document.getElementById("returnHint"),
+  assetLabel: document.getElementById("rtAssetLabel"),
+  cond: document.getElementById("rtCond"),
+  notes: document.getElementById("rtNotes"),
+  at: document.getElementById("rtAt"),
+};
+let _returnContext = null;
+
 function setText(el, v){ if(el) el.textContent = String(v ?? ""); }
 
 function esc(s){
@@ -500,13 +573,24 @@ function cardHTML(r){
   const metaSite = site ? `<div class="meta"><i class="fas fa-location-dot"></i> ${site}</div>` : "";
   const metaDue  = due ? `<div class="meta"><i class="fas fa-calendar-day"></i> Due ${due} ${days ? `(${days})` : ""}</div>` : "";
 
-  const actions = (st === "available")
-    ? `<div class="card-actions">
+  const canCheckout = (st === "available");
+  const canReturn = (st === "in use" || st === "overdue"); // Return Due is still "in use" in your view; it will fall into this anyway via UI lists
+
+  let actions = "";
+  if(canCheckout){
+    actions = `<div class="card-actions">
          <button class="mini-btn js-checkout" data-asset="${asset}">
            <i class="fas fa-right-to-bracket"></i> Check out
          </button>
-       </div>`
-    : "";
+       </div>`;
+  }else{
+    // show Return on anything not Available (In Use / Return Due / Overdue)
+    actions = `<div class="card-actions">
+         <button class="mini-btn return js-return" data-asset="${asset}">
+           <i class="fas fa-rotate-left"></i> Return
+         </button>
+       </div>`;
+  }
 
   return `
     <div class="card" data-asset="${asset}">
@@ -745,9 +829,6 @@ function wireCheckoutModal(){
   co.backdrop.addEventListener("click", (e) => {
     if(e.target === co.backdrop) closeCheckoutModal();
   });
-  document.addEventListener("keydown", (e) => {
-    if(e.key === "Escape" && co.backdrop.style.display === "flex") closeCheckoutModal();
-  });
 
   co.save.addEventListener("click", saveCheckout);
 
@@ -771,6 +852,150 @@ function wireCheckoutButtons(){
 }
 /* ---------- end checkout ---------- */
 
+/* ---------- Return Modal ---------- */
+function openReturnModal(row){
+  _returnContext = row || null;
+  if(!rt.backdrop) return;
+
+  rt.hint.textContent = "";
+
+  const asset = row?.asset_id || "--";
+  const name = row?.name || "";
+  rt.assetLabel.textContent = name ? `${asset} — ${name}` : asset;
+
+  rt.cond.value = "";
+  rt.notes.value = "";
+
+  const now = new Date();
+  rt.at.value = new Intl.DateTimeFormat(undefined, {
+    year:"numeric", month:"2-digit", day:"2-digit", hour:"numeric", minute:"2-digit", second:"2-digit"
+  }).format(now);
+
+  rt.backdrop.style.display = "flex";
+  rt.backdrop.setAttribute("aria-hidden", "false");
+  setTimeout(()=> rt.cond.focus(), 0);
+}
+
+function closeReturnModal(){
+  _returnContext = null;
+  if(!rt.backdrop) return;
+  rt.backdrop.style.display = "none";
+  rt.backdrop.setAttribute("aria-hidden", "true");
+}
+
+async function getActiveCheckoutByEquipmentId(equipmentId){
+  const { data, error } = await sb
+    .from("checkouts")
+    .select("id, notes")
+    .eq("equipment_id", equipmentId)
+    .is("returned_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if(error) throw error;
+  const row = data?.[0];
+  if(!row?.id) throw new Error("Active checkout not found.");
+  return row;
+}
+
+async function saveReturn(){
+  if(!_userId){
+    rt.hint.textContent = "Not signed in.";
+    return;
+  }
+
+  const row = _returnContext;
+  const assetId = row?.asset_id;
+  if(!assetId){
+    rt.hint.textContent = "Missing asset.";
+    return;
+  }
+
+  const cond = (rt.cond.value || "").trim();
+  const notes = (rt.notes.value || "").trim();
+
+  if(!cond){
+    rt.hint.textContent = "Enter return condition.";
+    return;
+  }
+
+  rt.hint.textContent = "";
+
+  try{
+    const equipmentId =
+      row?.equipment_id ||
+      row?.id ||
+      await resolveEquipmentIdByAssetId(assetId);
+
+    const active = await getActiveCheckoutByEquipmentId(equipmentId);
+
+    const nowIso = new Date().toISOString();
+    const append = notes ? `\nRETURN (${nowIso}): ${notes}` : `\nRETURN (${nowIso}).`;
+
+    const mergedNotes = (active.notes ? String(active.notes) : "") + append;
+
+    const { error } = await sb
+      .from("checkouts")
+      .update({
+        returned_at: nowIso,
+        return_condition: cond,
+        notes: mergedNotes
+      })
+      .eq("id", active.id);
+
+    if(error) throw error;
+
+    closeReturnModal();
+    await fetchEquipmentStatus();
+  }catch(err){
+    console.error(err);
+    rt.hint.textContent = err?.message || "Return failed.";
+  }
+}
+
+function wireReturnModal(){
+  if(!rt.backdrop || rt.backdrop.dataset.wired) return;
+
+  rt.close.addEventListener("click", closeReturnModal);
+  rt.cancel.addEventListener("click", closeReturnModal);
+  rt.backdrop.addEventListener("click", (e) => {
+    if(e.target === rt.backdrop) closeReturnModal();
+  });
+
+  rt.save.addEventListener("click", saveReturn);
+
+  rt.backdrop.dataset.wired = "1";
+}
+
+/* Delegated click for return buttons (In Use / Due / Overdue) */
+function wireReturnButtons(){
+  const lists = [els.list_inuse, els.list_due, els.list_overdue].filter(Boolean);
+  if(!lists.length) return;
+
+  lists.forEach(listEl => {
+    if(listEl.dataset.returnWired) return;
+
+    listEl.addEventListener("click", (e) => {
+      const btn = e.target.closest(".js-return");
+      if(!btn) return;
+      const asset = btn.getAttribute("data-asset");
+      const row = _statusRows.find(r => String(r.asset_id) === String(asset));
+      if(!row) return;
+      openReturnModal(row);
+    });
+
+    listEl.dataset.returnWired = "1";
+  });
+}
+/* ---------- end return ---------- */
+
+/* Global ESC handler (closes whichever modal is open) */
+document.addEventListener("keydown", (e) => {
+  if(e.key !== "Escape") return;
+  if(co.backdrop && co.backdrop.style.display === "flex") closeCheckoutModal();
+  if(rt.backdrop && rt.backdrop.style.display === "flex") closeReturnModal();
+});
+
 async function enforceAuthGate(){
   const { data: { session } } = await sb.auth.getSession();
   const authed = !!session;
@@ -784,6 +1009,8 @@ async function enforceAuthGate(){
     wireSearch();
     wireCheckoutModal();
     wireCheckoutButtons();
+    wireReturnModal();
+    wireReturnButtons();
     await fetchEquipmentStatus();
     startDashboardRefresh();
   }else{
@@ -1000,3 +1227,9 @@ enforceAuthGate();
 
 </body>
 </html>
+'@
+
+Set-Content -Path $path -Value $c -Encoding UTF8
+
+# VERIFY: confirm Return workflow markers exist
+Select-String -Path .\index.html -Pattern "Return Asset","js-return","return_condition" | Select-Object -First 50
