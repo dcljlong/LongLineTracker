@@ -9,31 +9,190 @@
 <link rel="stylesheet" href="./style.css" />
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<!-- SUPABASE CLIENT -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* Minimal modal styling (kept local to index.html so you don't touch style.css yet) */
+.modal-backdrop{
+  position:fixed; inset:0; z-index:10000;
+  background:rgba(0,0,0,.65);
+  display:none; align-items:center; justify-content:center;
+}
+.modal{
+  width: min(520px, calc(100vw - 24px));
+  background:#141414;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  box-shadow:0 18px 55px rgba(0,0,0,.55);
+  padding:18px;
+}
+.modal h3{
+  margin:0 0 10px 0; color:#fff; font-size:16px; font-weight:800;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal .x{
+  width:34px; height:34px; border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#0f0f0f; color:#fff; cursor:pointer;
+}
+.modal .row{ display:flex; gap:10px; }
+.modal .field{ margin-top:10px; flex:1; }
+.modal label{ display:block; color:#bdbdbd; font-size:12px; margin:0 0 6px; }
+.modal input, .modal textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#0f0f0f;
+  color:#fff;
+  outline:none;
+}
+.modal textarea{ min-height:84px; resize:vertical; }
+.modal .actions{
+  display:flex; gap:10px; margin-top:14px; justify-content:flex-end;
+}
+.modal .btn{
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#0f0f0f;
+  color:#fff;
+  cursor:pointer;
+  font-weight:800;
+}
+.modal .btn.primary{
+  border:none;
+  background:#7CC242;
+  color:#0b0b0b;
+}
+.modal .hint{
+  margin-top:8px;
+  min-height:18px;
+  font-size:12px;
+  color:#ff6b6b;
+}
+.card .card-actions{
+  margin-top:10px;
+  display:flex;
+  gap:8px;
+}
+.card .mini-btn{
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid rgba(0,0,0,.08);
+  background: rgba(124,194,66,.14);
+  color:#1f3b12;
+  font-weight:800;
+  cursor:pointer;
+  font-size:12px;
+}
+.card .mini-btn:active{ transform: translateY(1px); }
+</style>
 </head>
+
 <body>
+
+<!-- AUTH GATE (blocks app until logged in) -->
+<div id="auth-gate" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(10,10,10,.92);">
+  <form id="loginForm" autocomplete="on" style="background:#141414;border:1px solid rgba(255,255,255,.08);padding:28px;border-radius:12px;width:360px;box-shadow:0 16px 40px rgba(0,0,0,.45);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div style="width:38px;height:38px;border-radius:10px;background:#7CC242;display:flex;align-items:center;justify-content:center;color:#000;font-weight:800;">LLT</div>
+      <div style="color:#fff;font-weight:700;">Sign in</div>
+    </div>
+
+    <label style="display:block;color:#bbb;font-size:12px;margin:10px 0 6px;">Email</label>
+    <input id="loginEmail" type="email" autocomplete="username" required
+      style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;" />
+
+    <label style="display:block;color:#bbb;font-size:12px;margin:10px 0 6px;">Password</label>
+    <input id="loginPassword" type="password" autocomplete="current-password" required
+      style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;" />
+
+    <button id="loginBtn" type="submit"
+      style="margin-top:14px;width:100%;padding:10px 12px;border-radius:10px;border:none;background:#7CC242;color:#0b0b0b;font-weight:800;cursor:pointer;">
+      Login
+    </button>
+
+    <div id="loginError" style="min-height:18px;color:#ff6b6b;font-size:12px;margin-top:10px;"></div>
+  </form>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div id="checkoutBackdrop" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Checkout asset">
+    <h3>
+      <span><i class="fas fa-right-to-bracket"></i> Check Out Asset</span>
+      <button class="x" id="checkoutClose" title="Close"><i class="fas fa-xmark"></i></button>
+    </h3>
+
+    <div style="color:#cfcfcf;font-size:12px;margin-bottom:10px;">
+      <span style="opacity:.85;">Asset:</span> <strong id="coAssetLabel" style="color:#fff;">--</strong>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="coTo">Checked out to (person)</label>
+        <input id="coTo" type="text" placeholder="e.g., Davy / Foreman name" />
+      </div>
+      <div class="field">
+        <label for="coSite">Site</label>
+        <input id="coSite" type="text" placeholder="e.g., Bethlehem Site" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="coDue">Expected return date</label>
+        <input id="coDue" type="date" />
+      </div>
+      <div class="field">
+        <label for="coCond">Condition out</label>
+        <input id="coCond" type="text" placeholder="e.g., Good / Fair" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="coNotes">Notes</label>
+      <textarea id="coNotes" placeholder="Optional notes..."></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="checkoutCancel" type="button">Cancel</button>
+      <button class="btn primary" id="checkoutSave" type="button">Save Checkout</button>
+    </div>
+
+    <div class="hint" id="checkoutHint"></div>
+  </div>
+</div>
 
 <div class="app-shell">
 
   <!-- Slim rail -->
   <aside class="rail">
 
-    <!-- DEV MARK (max for column, independent from green) -->
+    <!-- DEV MARK -->
     <div class="rail-dev" title="Long Line Tracker">
       <img class="rail-dev-logo" src="./app-logo.png" alt="Long Line Tracker logo" />
       <div class="rail-dev-name">LLT</div>
     </div>
 
-    <!-- HOME BUTTON (green hardhat = Dashboard) -->
+    <!-- HOME BUTTON -->
     <button class="rail-home is-active" data-page="dashboard" title="Home / Dashboard">
       <i class="fas fa-hard-hat"></i>
     </button>
 
-    <!-- Only ONE extra nav item in rail: Calendar (remove duplicate Dashboard button) -->
+    <!-- Calendar -->
     <button class="rail-btn" data-page="calendar" title="Calendar">
       <i class="fas fa-calendar-alt"></i>
     </button>
 
     <div class="rail-spacer"></div>
+
+    <button id="logoutBtn" class="rail-btn" title="Logout" style="margin-bottom:10px;">
+      <i class="fas fa-right-from-bracket"></i>
+    </button>
 
     <div class="rail-badge" title="Company">
       <span id="railBadge">CU</span>
@@ -45,14 +204,13 @@
     <!-- Top header -->
     <header class="topbar">
 
-      <!-- Company logo only (tight frame) -->
       <div class="topbar-left">
         <div class="company-logo-wrap" aria-label="Company logo">
           <img id="companyLogo" class="company-logo" src="./company-logo.png" alt="Company logo" />
         </div>
       </div>
 
-      <!-- Primary navigation (single source of truth for tabs) -->
+      <!-- Primary navigation -->
       <nav class="top-tabs" role="tablist" aria-label="Primary navigation">
         <button class="tab is-active" data-page="dashboard">
           <i class="fas fa-chart-pie"></i><span>Dashboard</span>
@@ -95,7 +253,7 @@
           <div class="page-actions">
             <div class="search">
               <i class="fas fa-magnifying-glass"></i>
-              <input id="quickSearch" type="text" placeholder="Search assets (name / ID / person)..." />
+              <input id="quickSearch" type="text" placeholder="Search assets (name / ID / person / site)..." />
             </div>
           </div>
         </div>
@@ -161,7 +319,7 @@
         </div>
       </section>
 
-      <!-- CALENDAR -->
+      <!-- CALENDAR (still local for now) -->
       <section id="calendar-page" class="page">
         <div class="page-head">
           <h2>Schedule Calendar</h2>
@@ -171,18 +329,19 @@
         </div>
 
         <div class="calendar-wrap">
-  <div class="mini-months" aria-label="Mini month ribbon">
-  <button class="mm-nav mm-prev" id="mmPrev" title="Previous month"><i class="fas fa-chevron-left"></i></button>
+          <div class="mini-months" aria-label="Mini month ribbon">
+            <button class="mm-nav mm-prev" id="mmPrev" title="Previous month"><i class="fas fa-chevron-left"></i></button>
 
-  <div class="mini-month" id="miniM2" aria-label="Two months back"></div>
-  <div class="mini-month" id="miniM1" aria-label="Previous month"></div>
-  <div class="mini-month is-selected" id="miniM0" aria-label="Selected month"></div>
-  <div class="mini-month" id="miniP1" aria-label="Next month"></div>
-  <div class="mini-month" id="miniP2" aria-label="Two months ahead"></div>
+            <div class="mini-month" id="miniM2" aria-label="Two months back"></div>
+            <div class="mini-month" id="miniM1" aria-label="Previous month"></div>
+            <div class="mini-month is-selected" id="miniM0" aria-label="Selected month"></div>
+            <div class="mini-month" id="miniP1" aria-label="Next month"></div>
+            <div class="mini-month" id="miniP2" aria-label="Two months ahead"></div>
 
-  <button class="mm-nav mm-next" id="mmNext" title="Next month"><i class="fas fa-chevron-right"></i></button>
-</div>
-<div id="calendar"></div>
+            <button class="mm-nav mm-next" id="mmNext" title="Next month"><i class="fas fa-chevron-right"></i></button>
+          </div>
+
+          <div id="calendar"></div>
         </div>
       </section>
 
@@ -193,6 +352,9 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
+/* =========================
+   BRANDING + CLOCK
+   ========================= */
 const BRANDING = {
   railBadge: "CU",
   companyLogoPath: "./company-logo.png"
@@ -230,7 +392,7 @@ function applyBranding(){
 
 function setActivePage(page){
   document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
-  document.getElementById(page + "-page").classList.add("is-active");
+  document.getElementById(page + "-page")?.classList.add("is-active");
 
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
   document.querySelectorAll(".rail-btn").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
@@ -246,7 +408,416 @@ document.addEventListener("click", (e) => {
   if (railBtn && railBtn.dataset.page) setActivePage(railBtn.dataset.page);
 });
 
-/* ===== Calendar persistence (LocalStorage) ===== */
+/* =========================
+   SUPABASE AUTH + DATA
+   ========================= */
+const SUPABASE_URL = "https://dgqmogvwduyprfycqprn.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_2G2_zfR4acV8sHdYaDOT4g_g0XOj9tL";
+
+/* use `sb` to avoid name collisions */
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const authGate = document.getElementById("auth-gate");
+const appShell = document.querySelector(".app-shell");
+const loginForm = document.getElementById("loginForm");
+const loginError = document.getElementById("loginError");
+const logoutBtn = document.getElementById("logoutBtn");
+
+/* dashboard elements */
+const els = {
+  hk_total: document.getElementById("hk_total"),
+  hk_due: document.getElementById("hk_due"),
+  hk_overdue: document.getElementById("hk_overdue"),
+
+  k_total: document.getElementById("k_total"),
+  k_inuse: document.getElementById("k_inuse"),
+  k_due: document.getElementById("k_due"),
+  k_overdue: document.getElementById("k_overdue"),
+
+  c_available: document.getElementById("c_available"),
+  c_inuse: document.getElementById("c_inuse"),
+  c_due: document.getElementById("c_due"),
+  c_overdue: document.getElementById("c_overdue"),
+
+  list_available: document.getElementById("list_available"),
+  list_inuse: document.getElementById("list_inuse"),
+  list_due: document.getElementById("list_due"),
+  list_overdue: document.getElementById("list_overdue"),
+
+  quickSearch: document.getElementById("quickSearch"),
+};
+
+let _statusRows = [];
+let _refreshTimer = null;
+let _userId = null;
+
+/* checkout modal refs */
+const co = {
+  backdrop: document.getElementById("checkoutBackdrop"),
+  close: document.getElementById("checkoutClose"),
+  cancel: document.getElementById("checkoutCancel"),
+  save: document.getElementById("checkoutSave"),
+  hint: document.getElementById("checkoutHint"),
+  assetLabel: document.getElementById("coAssetLabel"),
+  to: document.getElementById("coTo"),
+  site: document.getElementById("coSite"),
+  due: document.getElementById("coDue"),
+  cond: document.getElementById("coCond"),
+  notes: document.getElementById("coNotes"),
+};
+let _checkoutContext = null;
+
+function setText(el, v){ if(el) el.textContent = String(v ?? ""); }
+
+function esc(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+function fmtDateShort(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat(undefined, { year:"numeric", month:"2-digit", day:"2-digit" }).format(d);
+}
+
+function cardHTML(r){
+  const title = esc(r.name || "Unnamed");
+  const asset = esc(r.asset_id || "");
+  const cat = esc(r.category || "");
+  const who = esc(r.checked_out_to || "");
+  const site = esc(r.site || "");
+  const due = r.expected_return_at ? fmtDateShort(r.expected_return_at) : "";
+  const days = (r.days_to_due === null || r.days_to_due === undefined) ? "" : `${r.days_to_due}d`;
+  const st = String(r.status || "").toLowerCase();
+
+  const metaLeft = cat ? `<div class="meta"><i class="fas fa-tag"></i> ${cat}</div>` : "";
+  const metaWho  = who ? `<div class="meta"><i class="fas fa-user"></i> ${who}</div>` : "";
+  const metaSite = site ? `<div class="meta"><i class="fas fa-location-dot"></i> ${site}</div>` : "";
+  const metaDue  = due ? `<div class="meta"><i class="fas fa-calendar-day"></i> Due ${due} ${days ? `(${days})` : ""}</div>` : "";
+
+  const actions = (st === "available")
+    ? `<div class="card-actions">
+         <button class="mini-btn js-checkout" data-asset="${asset}">
+           <i class="fas fa-right-to-bracket"></i> Check out
+         </button>
+       </div>`
+    : "";
+
+  return `
+    <div class="card" data-asset="${asset}">
+      <div class="card-top">
+        <div class="card-title">${title}</div>
+        <div class="card-id">${asset}</div>
+      </div>
+      <div class="card-meta">
+        ${metaLeft}
+        ${metaWho}
+        ${metaSite}
+        ${metaDue}
+      </div>
+      ${actions}
+    </div>
+  `;
+}
+
+function renderLists(rows){
+  const q = (els.quickSearch?.value || "").trim().toLowerCase();
+
+  const filtered = !q ? rows : rows.filter(r => {
+    const hay = [
+      r.asset_id, r.name, r.category, r.checked_out_to, r.site
+    ].map(x => String(x || "").toLowerCase()).join(" | ");
+    return hay.includes(q);
+  });
+
+  const available = [];
+  const inuse = [];
+  const due = [];
+  const overdue = [];
+
+  for(const r of filtered){
+    const st = (r.status || "").toLowerCase();
+    const dtd = (r.days_to_due === null || r.days_to_due === undefined) ? null : Number(r.days_to_due);
+
+    if(st === "available"){
+      available.push(r);
+      continue;
+    }
+
+    if(st === "overdue"){
+      overdue.push(r);
+      continue;
+    }
+
+    if(st === "in use"){
+      if(dtd !== null && dtd >= 0 && dtd <= 7) due.push(r);
+      else inuse.push(r);
+      continue;
+    }
+  }
+
+  setText(els.c_available, available.length);
+  setText(els.c_inuse, inuse.length);
+  setText(els.c_due, due.length);
+  setText(els.c_overdue, overdue.length);
+
+  if(els.list_available) els.list_available.innerHTML = available.map(cardHTML).join("");
+  if(els.list_inuse) els.list_inuse.innerHTML = inuse.map(cardHTML).join("");
+  if(els.list_due) els.list_due.innerHTML = due.map(cardHTML).join("");
+  if(els.list_overdue) els.list_overdue.innerHTML = overdue.map(cardHTML).join("");
+}
+
+function renderKPIs(allRows){
+  const total = allRows.length;
+
+  let active = 0;
+  let dueWeek = 0;
+  let overdue = 0;
+
+  for(const r of allRows){
+    const st = (r.status || "").toLowerCase();
+    const dtd = (r.days_to_due === null || r.days_to_due === undefined) ? null : Number(r.days_to_due);
+
+    if(st === "in use" || st === "overdue") active++;
+    if(st === "overdue") overdue++;
+    if(st === "in use" && dtd !== null && dtd >= 0 && dtd <= 7) dueWeek++;
+  }
+
+  setText(els.hk_total, total);
+  setText(els.hk_due, dueWeek);
+  setText(els.hk_overdue, overdue);
+
+  setText(els.k_total, total);
+  setText(els.k_inuse, active);
+  setText(els.k_due, dueWeek);
+  setText(els.k_overdue, overdue);
+}
+
+async function fetchEquipmentStatus(){
+  const { data, error } = await sb
+    .from("equipment_status")
+    .select("*")
+    .order("asset_id", { ascending: true });
+
+  if(error){
+    console.error("equipment_status fetch error:", error);
+    _statusRows = [];
+    renderKPIs(_statusRows);
+    renderLists(_statusRows);
+    return;
+  }
+
+  _statusRows = Array.isArray(data) ? data : [];
+  renderKPIs(_statusRows);
+  renderLists(_statusRows);
+}
+
+function wireSearch(){
+  if(!els.quickSearch || els.quickSearch.dataset.wired) return;
+  els.quickSearch.addEventListener("input", () => renderLists(_statusRows));
+  els.quickSearch.dataset.wired = "1";
+}
+
+function startDashboardRefresh(){
+  if(_refreshTimer) clearInterval(_refreshTimer);
+  _refreshTimer = setInterval(fetchEquipmentStatus, 30000); // 30s
+}
+
+/* ---------- Checkout Modal ---------- */
+function openCheckoutModal(row){
+  _checkoutContext = row || null;
+  if(!co.backdrop) return;
+
+  co.hint.textContent = "";
+  const asset = row?.asset_id || "--";
+  const name = row?.name || "";
+  co.assetLabel.textContent = name ? `${asset} — ${name}` : asset;
+
+  co.to.value = row?.checked_out_to || "";
+  co.site.value = row?.site || "";
+  co.cond.value = row?.condition || "";
+  co.notes.value = "";
+
+  // default due date: +7 days
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  const iso = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0,10);
+  co.due.value = iso;
+
+  co.backdrop.style.display = "flex";
+  co.backdrop.setAttribute("aria-hidden", "false");
+  setTimeout(()=> co.to.focus(), 0);
+}
+
+function closeCheckoutModal(){
+  _checkoutContext = null;
+  if(!co.backdrop) return;
+  co.backdrop.style.display = "none";
+  co.backdrop.setAttribute("aria-hidden", "true");
+}
+
+async function resolveEquipmentIdByAssetId(assetId){
+  const { data, error } = await sb
+    .from("equipment")
+    .select("id")
+    .eq("asset_id", assetId)
+    .limit(1);
+
+  if(error) throw error;
+  const id = data?.[0]?.id;
+  if(!id) throw new Error("Equipment not found for asset_id: " + assetId);
+  return id;
+}
+
+async function saveCheckout(){
+  if(!_userId){
+    co.hint.textContent = "Not signed in.";
+    return;
+  }
+  const row = _checkoutContext;
+  const assetId = row?.asset_id;
+  if(!assetId){
+    co.hint.textContent = "Missing asset.";
+    return;
+  }
+
+  const checkedOutTo = (co.to.value || "").trim();
+  const site = (co.site.value || "").trim();
+  const due = co.due.value; // YYYY-MM-DD
+  const notes = (co.notes.value || "").trim();
+  const condOut = (co.cond.value || "").trim();
+
+  if(!checkedOutTo){
+    co.hint.textContent = "Enter 'Checked out to'.";
+    return;
+  }
+  if(!due){
+    co.hint.textContent = "Select expected return date.";
+    return;
+  }
+
+  co.hint.textContent = "";
+
+  try{
+    const equipmentId =
+      row?.equipment_id ||
+      row?.id ||                 // if your view exposes equipment id as id
+      await resolveEquipmentIdByAssetId(assetId);
+
+    const expected = new Date(due + "T00:00:00");
+    if(isNaN(expected.getTime())) throw new Error("Invalid due date.");
+
+    const payload = {
+      equipment_id: equipmentId,
+      checked_out_by: _userId,
+      checked_out_to: checkedOutTo,
+      site: site || null,
+      expected_return_at: expected.toISOString(),
+      notes: notes || null
+    };
+
+    const { error } = await sb.from("checkouts").insert(payload);
+    if(error) throw error;
+
+    // optionally set equipment condition note (not required)
+    if(condOut){
+      await sb.from("equipment").update({ condition: condOut }).eq("asset_id", assetId);
+    }
+
+    closeCheckoutModal();
+    await fetchEquipmentStatus();
+  }catch(err){
+    console.error(err);
+    co.hint.textContent = err?.message || "Checkout failed.";
+  }
+}
+
+function wireCheckoutModal(){
+  if(!co.backdrop || co.backdrop.dataset.wired) return;
+
+  co.close.addEventListener("click", closeCheckoutModal);
+  co.cancel.addEventListener("click", closeCheckoutModal);
+  co.backdrop.addEventListener("click", (e) => {
+    if(e.target === co.backdrop) closeCheckoutModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape" && co.backdrop.style.display === "flex") closeCheckoutModal();
+  });
+
+  co.save.addEventListener("click", saveCheckout);
+
+  co.backdrop.dataset.wired = "1";
+}
+
+/* Delegated click for checkout buttons */
+function wireCheckoutButtons(){
+  if(!els.list_available || els.list_available.dataset.wired) return;
+
+  els.list_available.addEventListener("click", (e) => {
+    const btn = e.target.closest(".js-checkout");
+    if(!btn) return;
+    const asset = btn.getAttribute("data-asset");
+    const row = _statusRows.find(r => String(r.asset_id) === String(asset));
+    if(!row) return;
+    openCheckoutModal(row);
+  });
+
+  els.list_available.dataset.wired = "1";
+}
+/* ---------- end checkout ---------- */
+
+async function enforceAuthGate(){
+  const { data: { session } } = await sb.auth.getSession();
+  const authed = !!session;
+
+  authGate.style.display = authed ? "none" : "flex";
+  if (appShell) appShell.style.display = authed ? "" : "none";
+
+  _userId = session?.user?.id || null;
+
+  if(authed){
+    wireSearch();
+    wireCheckoutModal();
+    wireCheckoutButtons();
+    await fetchEquipmentStatus();
+    startDashboardRefresh();
+  }else{
+    if(_refreshTimer) clearInterval(_refreshTimer);
+    _refreshTimer = null;
+    _statusRows = [];
+  }
+}
+
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  loginError.textContent = "";
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) loginError.textContent = error.message;
+
+  await enforceAuthGate();
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await sb.auth.signOut();
+  await enforceAuthGate();
+});
+
+sb.auth.onAuthStateChange(() => {
+  enforceAuthGate();
+});
+
+/* =========================
+   CALENDAR (still local)
+   ========================= */
 const CAL_STORAGE_KEY = "LLT_CAL_EVENTS_V1";
 
 function loadCalEvents(){
@@ -274,23 +845,24 @@ function saveCalEvents(cal){
     // no-op
   }
 }
-/* ===== end persistence ===== */
 
 /* ===== Mini month previews logic ===== */
-function gotoMainDate(dt){ if(!_cal) return; gotoMainDate(dt); if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths, 0); } }
+function gotoMainDate(dt){
+  if(!_cal) return;
+  _cal.gotoDate(dt);
+  setTimeout(updateMiniMonths, 0);
+}
 
 function renderMiniMonth(containerId, year, monthIndex, focusDate){
   const el = document.getElementById(containerId);
   if(!el) return;
 
   const monthStart = new Date(year, monthIndex, 1);
-  const monthEnd = new Date(year, monthIndex + 1, 0);
   const today = new Date();
 
   const titleFmt = new Intl.DateTimeFormat(undefined, { month:"long", year:"numeric" });
   const dow = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-  // start grid on Sunday
   const gridStart = new Date(year, monthIndex, 1);
   gridStart.setDate(gridStart.getDate() - gridStart.getDay());
 
@@ -330,15 +902,13 @@ function renderMiniMonth(containerId, year, monthIndex, focusDate){
 
   el.innerHTML = html;
 
-  // click to goto date
   el.querySelectorAll('[data-goto]').forEach(n => {
     n.addEventListener('click', () => {
       if(!_cal) return;
       const dt = new Date(n.getAttribute('data-goto'));
       gotoMainDate(dt);
-    
-      if (typeof updateMiniMonths === "function") { updateMiniMonths(); }
-});
+      updateMiniMonths();
+    });
   });
 }
 
@@ -348,14 +918,6 @@ function updateMiniMonths(){
   const focus = _cal.getDate();
   const y = focus.getFullYear();
   const m = focus.getMonth();
-
-  // clear selected state
-  ["miniM2","miniM1","miniM0","miniP1","miniP2"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.classList.remove("is-selected");
-  });
-  const center=document.getElementById("miniM0");
-  if(center) center.classList.add("is-selected");
 
   const slots = [
     { id:"miniM2", off:-2 },
@@ -371,16 +933,17 @@ function updateMiniMonths(){
   });
 }
 
-// ribbon nav buttons move the MAIN calendar month
 function wireMiniMonthNav(){
   const prev = document.getElementById("mmPrev");
   const next = document.getElementById("mmNext");
+
   if(prev && !prev.dataset.wired){
     prev.addEventListener("click", ()=>{
       if(!_cal) return;
       const f=_cal.getDate();
       _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()-1, 1));
-    if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths,0); }});
+      setTimeout(updateMiniMonths, 0);
+    });
     prev.dataset.wired="1";
   }
   if(next && !next.dataset.wired){
@@ -388,42 +951,22 @@ function wireMiniMonthNav(){
       if(!_cal) return;
       const f=_cal.getDate();
       _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()+1, 1));
-    if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths,0); }});
+      setTimeout(updateMiniMonths, 0);
+    });
     next.dataset.wired="1";
   }
-
-  // optional wheel scroll on ribbon
-  const ribbon = document.querySelector(".mini-months");
-  if(ribbon && !ribbon.dataset.wired){
-    let t=0;
-    ribbon.addEventListener("wheel",(e)=>{
-      if(Math.abs(e.deltaY) < 5) return;
-      e.preventDefault();
-      const now=Date.now();
-      if(now - t < 250) return;
-      t = now;
-      const f=_cal?.getDate?.();
-      if(!f) return;
-      const dir = e.deltaY > 0 ? 1 : -1;
-      _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()+dir, 1));
-    if(typeof updateMiniMonths==="function"){ setTimeout(updateMiniMonths,0); }},{passive:false});
-    ribbon.dataset.wired="1";
-  }
 }
-/* ===== end mini months ===== */
 
 function startCalendar(){
   const calEl = document.getElementById("calendar");
   if (!calEl || _cal) return;
 
   _cal = new FullCalendar.Calendar(calEl, {
-    
-    datesSet() { if(typeof updateMiniMonths==="function"){ updateMiniMonths(); } },
-initialView: "dayGridMonth",
-    
+    datesSet(){ setTimeout(updateMiniMonths, 0); },
+    initialView: "dayGridMonth",
     dayMaxEventRows: true,
     moreLinkClick: "popover",
-height: "100%",
+    height: "100%",
     expandRows: true,
     headerToolbar: { left:"prev,next today", center:"title", right:"dayGridMonth,timeGridWeek,timeGridDay" },
     selectable: true,
@@ -433,73 +976,27 @@ height: "100%",
     select(info){
       const t = prompt("Event title:");
       if (t) _cal.addEvent({ title: t, start: info.startStr, end: info.endStr, allDay: info.allDay });
-    
-      saveCalEvents(_cal); applyCalendarDensity();
-},
+      saveCalEvents(_cal);
+    },
     eventClick(info){
       if (confirm("Delete this event?")) info.event.remove();
-    
-      saveCalEvents(_cal); applyCalendarDensity();
-}
-    ,eventChange() { saveCalEvents(_cal); applyCalendarDensity(); }
+      saveCalEvents(_cal);
+    },
+    eventChange(){ saveCalEvents(_cal); }
   });
 
   _cal.render();
+  wireMiniMonthNav();
+  updateMiniMonths();
 
-  
-  
-  if (typeof wireMiniMonthNav === "function") { wireMiniMonthNav(); }
-  if (typeof updateMiniMonths === "function") { updateMiniMonths(); }
-if (typeof updateMiniMonths === "function") { updateMiniMonths(); setTimeout(updateMiniMonths, 50); }
-const btnToday = document.getElementById("btnToday");
+  const btnToday = document.getElementById("btnToday");
   if (btnToday) btnToday.addEventListener("click", () => _cal.today());
 }
 
+/* boot */
 applyBranding();
+enforceAuthGate();
 </script>
 
 </body>
 </html>
-
-
-
-<script>
-
-/* ===== Calendar Auto Density Logic ===== */
-function applyCalendarDensity(){
-  if (!_cal) return;
-
-  const calEl = document.querySelector('.fc');
-  if (!calEl) return;
-
-  const total = _cal.getEvents().length;
-
-  calEl.classList.remove('dense','super-dense');
-
-  if (total > 40){
-    calEl.classList.add('super-dense');
-  } else if (total > 20){
-    calEl.classList.add('dense');
-  }
-}
-
-/* Hook into calendar lifecycle */
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => applyCalendarDensity(), 800);
-});
-
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
