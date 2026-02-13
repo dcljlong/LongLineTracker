@@ -1,16 +1,4 @@
-﻿cd D:\LongLineTracker
-
-# BACKUP before overwrite
-$stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
-$bakDir = "D:\LongLineTracker\_backups\return_workflow_step3_$stamp"
-New-Item -ItemType Directory -Force -Path $bakDir | Out-Null
-Copy-Item .\index.html (Join-Path $bakDir "index.html") -Force
-Test-Path (Join-Path $bakDir "index.html")
-
-# OVERWRITE index.html (Return workflow)
-$path = "D:\LongLineTracker\index.html"
-$c = @'
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -26,97 +14,70 @@ $c = @'
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* Minimal modal styling (kept local to index.html so you don't touch style.css yet) */
-.modal-backdrop{
-  position:fixed; inset:0; z-index:10000;
-  background:rgba(0,0,0,.65);
-  display:none; align-items:center; justify-content:center;
+.modal-backdrop{position:fixed; inset:0; z-index:10000;background:rgba(0,0,0,.65);display:none; align-items:center; justify-content:center;}
+.modal{width:min(560px, calc(100vw - 24px));background:#141414;border:1px solid rgba(255,255,255,.10);border-radius:14px;box-shadow:0 18px 55px rgba(0,0,0,.55);padding:18px;}
+.modal h3{margin:0 0 10px 0; color:#fff; font-size:16px; font-weight:800;display:flex; align-items:center; justify-content:space-between;}
+.modal .x{width:34px; height:34px; border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f; color:#fff; cursor:pointer;}
+.modal .row{display:flex; gap:10px;}
+.modal .field{margin-top:10px; flex:1;}
+.modal label{display:block; color:#bdbdbd; font-size:12px; margin:0 0 6px;}
+.modal input,.modal textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;}
+.modal textarea{min-height:84px; resize:vertical;}
+.modal .actions{display:flex; gap:10px; margin-top:14px; justify-content:flex-end;}
+.modal .btn{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;cursor:pointer;font-weight:800;}
+.modal .btn.primary{border:none;background:#7CC242;color:#0b0b0b;}
+.modal .btn.danger{border:none;background:#ff6b6b;color:#1a0a0a;}
+.modal .btn[disabled]{opacity:.55; cursor:not-allowed;}
+.modal .hint{margin-top:8px;min-height:18px;font-size:12px;color:#ff6b6b;}
+
+.card .card-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;}
+.card .mini-btn{padding:6px 10px;border-radius:10px;border:1px solid rgba(0,0,0,.08);background: rgba(124,194,66,.14);color:#1f3b12;font-weight:800;cursor:pointer;font-size:12px;}
+.card .mini-btn.return{background: rgba(255,107,107,.16);color:#4c0f0f;}
+.card .mini-btn.edit{background: rgba(255,255,255,.10);color:#eaeaea;border:1px solid rgba(255,255,255,.12);}
+.card .mini-btn:active{transform: translateY(1px);}
+
+.page-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+/* LLT_MANAGE_VIS_FIX_V1 */
+#mgList{
+  background:#141414 !important;
 }
-.modal{
-  width: min(520px, calc(100vw - 24px));
-  background:#141414;
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:14px;
-  box-shadow:0 18px 55px rgba(0,0,0,.55);
-  padding:18px;
+
+#mgList .mg-row{
+  padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:#181818;
 }
-.modal h3{
-  margin:0 0 10px 0; color:#fff; font-size:16px; font-weight:800;
-  display:flex; align-items:center; justify-content:space-between;
+
+#mgList .mg-row:hover{
+  background:#1f1f1f;
 }
-.modal .x{
-  width:34px; height:34px; border-radius:10px;
-  border:1px solid rgba(255,255,255,.12);
-  background:#0f0f0f; color:#fff; cursor:pointer;
-}
-.modal .row{ display:flex; gap:10px; }
-.modal .field{ margin-top:10px; flex:1; }
-.modal label{ display:block; color:#bdbdbd; font-size:12px; margin:0 0 6px; }
-.modal input, .modal textarea{
-  width:100%;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.12);
-  background:#0f0f0f;
-  color:#fff;
-  outline:none;
-}
-.modal textarea{ min-height:84px; resize:vertical; }
-.modal .actions{
-  display:flex; gap:10px; margin-top:14px; justify-content:flex-end;
-}
-.modal .btn{
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.12);
-  background:#0f0f0f;
-  color:#fff;
-  cursor:pointer;
+
+#mgList .mg-id{
+  color:#ffffff !important;
   font-weight:800;
+  font-size:13px;
 }
-.modal .btn.primary{
-  border:none;
-  background:#7CC242;
-  color:#0b0b0b;
+
+#mgList .mg-name{
+  color:#e0e0e0 !important;
+  font-size:13px;
 }
-.modal .btn.danger{
-  border:none;
-  background:#ff6b6b;
-  color:#1a0a0a;
-}
-.modal .hint{
-  margin-top:8px;
-  min-height:18px;
-  font-size:12px;
-  color:#ff6b6b;
-}
-.card .card-actions{
-  margin-top:10px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.card .mini-btn{
-  padding:6px 10px;
-  border-radius:10px;
-  border:1px solid rgba(0,0,0,.08);
-  background: rgba(124,194,66,.14);
-  color:#1f3b12;
-  font-weight:800;
-  cursor:pointer;
+
+#mgList .mg-meta{
+  color:#9f9f9f !important;
   font-size:12px;
 }
-.card .mini-btn.return{
-  background: rgba(255,107,107,.16);
-  color:#4c0f0f;
-}
-.card .mini-btn:active{ transform: translateY(1px); }
+
+/* LLT_MANAGE_ACTIONS_CSS_V1 */
+#mgList .mg-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+#mgList .mg-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; }
+#mgList .mg-actions .mini-btn{ background: rgba(124,194,66,.18) !important; color:#eaffd6 !important; border:1px solid rgba(124,194,66,.28) !important; }
+#mgList .mg-actions .mini-btn:disabled{ opacity:.45 !important; cursor:not-allowed !important; }
 </style>
 </head>
 
 <body>
 
-<!-- AUTH GATE (blocks app until logged in) -->
 <div id="auth-gate" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(10,10,10,.92);">
   <form id="loginForm" autocomplete="on" style="background:#141414;border:1px solid rgba(255,255,255,.08);padding:28px;border-radius:12px;width:360px;box-shadow:0 16px 40px rgba(0,0,0,.45);">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
@@ -125,20 +86,62 @@ $c = @'
     </div>
 
     <label style="display:block;color:#bbb;font-size:12px;margin:10px 0 6px;">Email</label>
-    <input id="loginEmail" type="email" autocomplete="username" required
-      style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;" />
+    <input id="loginEmail" type="email" autocomplete="username" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;" />
 
     <label style="display:block;color:#bbb;font-size:12px;margin:10px 0 6px;">Password</label>
-    <input id="loginPassword" type="password" autocomplete="current-password" required
-      style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;" />
+    <input id="loginPassword" type="password" autocomplete="current-password" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;" />
 
-    <button id="loginBtn" type="submit"
-      style="margin-top:14px;width:100%;padding:10px 12px;border-radius:10px;border:none;background:#7CC242;color:#0b0b0b;font-weight:800;cursor:pointer;">
-      Login
-    </button>
-
+    <button id="loginBtn" type="submit" style="margin-top:14px;width:100%;padding:10px 12px;border-radius:10px;border:none;background:#7CC242;color:#0b0b0b;font-weight:800;cursor:pointer;">Login</button>
     <div id="loginError" style="min-height:18px;color:#ff6b6b;font-size:12px;margin-top:10px;"></div>
   </form>
+</div>
+
+<!-- EQUIPMENT ADD/EDIT MODAL -->
+<div id="equipBackdrop" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Equipment">
+    <h3>
+      <span id="eqTitle"><i class="fas fa-screwdriver-wrench"></i> Equipment</span>
+      <button class="x" id="equipClose" title="Close"><i class="fas fa-xmark"></i></button>
+    </h3>
+
+    <div style="color:#cfcfcf;font-size:12px;margin-bottom:10px;">
+      <span style="opacity:.85;">Mode:</span> <strong id="eqModeLabel" style="color:#fff;">--</strong>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="eqAssetId">Asset ID</label>
+        <input id="eqAssetId" type="text" placeholder="e.g., CU-001" />
+      </div>
+      <div class="field">
+        <label for="eqName">Name</label>
+        <input id="eqName" type="text" placeholder="e.g., Laser Level" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="eqCategory">Category</label>
+        <input id="eqCategory" type="text" placeholder="e.g., Tools / Access / Plant" />
+      </div>
+      <div class="field">
+        <label for="eqCondition">Condition</label>
+        <input id="eqCondition" type="text" placeholder="e.g., Good / Fair / Needs repair" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="eqNotes">Notes</label>
+      <textarea id="eqNotes" placeholder="Optional notes..."></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="equipCancel" type="button">Cancel</button>
+      <button class="btn primary" id="equipSave" type="button"><span id="eqSaveLabel">Save</span></button>
+    </div>
+
+    <div class="hint" id="equipHint"></div>
+  </div>
 </div>
 
 <!-- CHECKOUT MODAL -->
@@ -226,90 +229,94 @@ $c = @'
   </div>
 </div>
 
+<!-- MANAGE EQUIPMENT MODAL -->
+<div id="manageBackdrop" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Manage equipment">
+    <h3>
+      <span><i class="fas fa-list"></i> Manage Equipment</span>
+      <button class="x" id="manageClose" title="Close"><i class="fas fa-xmark"></i></button>
+    </h3>
+
+    <div class="field" style="margin-top:0;">
+      <label for="mgSearch">Search</label>
+      <input id="mgSearch" type="text" placeholder="Search by Asset ID / Name / Category..." />
+    <div class="row">
+      <div class="field">
+        <label for="mgStatus">Status</label>
+<select id="mgStatus" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;">
+  <option value="All">All</option>
+  <option value="Available">Available</option>
+  <option value="In Use">In Use</option>
+  <option value="Overdue">Overdue</option>
+  <option value="Return Due">Return Due</option>
+</select>
+</div>
+      <div class="field">
+        <label for="mgCategory">Category</label>
+<select id="mgCategory" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f0f0f;color:#fff;outline:none;">
+  <option value="All">All</option>
+</select>
+</div>
+    </div>
+    </div>
+
+    <div id="mgList" style="margin-top:10px; max-height:52vh; overflow:auto; border:1px solid rgba(255,255,255,.10); border-radius:12px; background:#0f0f0f;"></div>
+
+    <div class="actions">
+      <button class="btn" id="manageCancel" type="button">Close</button>
+    </div>
+
+    <div class="hint" id="manageHint"></div>
+  </div>
+</div>
 <div class="app-shell">
-
-  <!-- Slim rail -->
   <aside class="rail">
-
-    <!-- DEV MARK -->
     <div class="rail-dev" title="Long Line Tracker">
       <img class="rail-dev-logo" src="./app-logo.png" alt="Long Line Tracker logo" />
       <div class="rail-dev-name">LLT</div>
     </div>
 
-    <!-- HOME BUTTON -->
-    <button class="rail-home is-active" data-page="dashboard" title="Home / Dashboard">
-      <i class="fas fa-hard-hat"></i>
-    </button>
-
-    <!-- Calendar -->
-    <button class="rail-btn" data-page="calendar" title="Calendar">
-      <i class="fas fa-calendar-alt"></i>
-    </button>
+    <button class="rail-home is-active" data-page="dashboard" title="Home / Dashboard"><i class="fas fa-hard-hat"></i></button>
+    <button class="rail-btn" data-page="calendar" title="Calendar"><i class="fas fa-calendar-alt"></i></button>
 
     <div class="rail-spacer"></div>
 
-    <button id="logoutBtn" class="rail-btn" title="Logout" style="margin-bottom:10px;">
-      <i class="fas fa-right-from-bracket"></i>
-    </button>
+    <button id="logoutBtn" class="rail-btn" title="Logout" style="margin-bottom:10px;"><i class="fas fa-right-from-bracket"></i></button>
 
-    <div class="rail-badge" title="Company">
-      <span id="railBadge">CU</span>
-    </div>
+    <div class="rail-badge" title="Company"><span id="railBadge">CU</span></div>
   </aside>
 
   <div class="app-main">
-
-    <!-- Top header -->
     <header class="topbar">
-
       <div class="topbar-left">
         <div class="company-logo-wrap" aria-label="Company logo">
           <img id="companyLogo" class="company-logo" src="./company-logo.png" alt="Company logo" />
         </div>
       </div>
 
-      <!-- Primary navigation -->
       <nav class="top-tabs" role="tablist" aria-label="Primary navigation">
-        <button class="tab is-active" data-page="dashboard">
-          <i class="fas fa-chart-pie"></i><span>Dashboard</span>
-        </button>
-        <button class="tab" data-page="calendar">
-          <i class="fas fa-calendar-alt"></i><span>Calendar</span>
-        </button>
+        <button class="tab is-active" data-page="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></button>
+        <button class="tab" data-page="calendar"><i class="fas fa-calendar-alt"></i><span>Calendar</span></button>
       </nav>
 
       <div class="topbar-right">
-        <div class="clock">
-          <i class="fas fa-clock"></i>
-          <span id="liveDate">--</span>
-        </div>
+        <div class="clock"><i class="fas fa-clock"></i><span id="liveDate">--</span></div>
 
         <div class="header-kpis" aria-label="Header KPIs">
-          <div class="hkpi">
-            <div class="hkpi-num" id="hk_total">0</div>
-            <div class="hkpi-lbl">Assets</div>
-          </div>
-          <div class="hkpi warn">
-            <div class="hkpi-num" id="hk_due">0</div>
-            <div class="hkpi-lbl">Due</div>
-          </div>
-          <div class="hkpi danger">
-            <div class="hkpi-num" id="hk_overdue">0</div>
-            <div class="hkpi-lbl">Overdue</div>
-          </div>
+          <div class="hkpi"><div class="hkpi-num" id="hk_total">0</div><div class="hkpi-lbl">Assets</div></div>
+          <div class="hkpi warn"><div class="hkpi-num" id="hk_due">0</div><div class="hkpi-lbl">Due</div></div>
+          <div class="hkpi danger"><div class="hkpi-num" id="hk_overdue">0</div><div class="hkpi-lbl">Overdue</div></div>
         </div>
       </div>
     </header>
 
-    <!-- Content -->
     <main class="content">
-
-      <!-- DASHBOARD -->
       <section id="dashboard-page" class="page is-active">
         <div class="page-head">
           <h2>Operations Dashboard</h2>
           <div class="page-actions">
+            <button class="btn" id="btnAddEquipment" title="Add equipment"><i class="fas fa-plus"></i> Add Equipment</button>
+            <button class="btn" id="btnManageEquipment" title="Manage equipment"><i class="fas fa-list"></i> Manage Equipment</button>
             <div class="search">
               <i class="fas fa-magnifying-glass"></i>
               <input id="quickSearch" type="text" placeholder="Search assets (name / ID / person / site)..." />
@@ -318,67 +325,35 @@ $c = @'
         </div>
 
         <div class="kpi-row">
-          <div class="kpi-card">
-            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-boxes-stacked"></i></span><span class="kpi-title">Total Equipment</span></div>
-            <div class="kpi-value" id="k_total">0</div>
-            <div class="kpi-foot">All tracked assets</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-person-digging"></i></span><span class="kpi-title">Active Checkouts</span></div>
-            <div class="kpi-value" id="k_inuse">0</div>
-            <div class="kpi-foot">Currently assigned</div>
-          </div>
-
-          <div class="kpi-card warn">
-            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-hourglass-half"></i></span><span class="kpi-title">Due This Week</span></div>
-            <div class="kpi-value" id="k_due">0</div>
-            <div class="kpi-foot">Return window risk</div>
-          </div>
-
-          <div class="kpi-card danger">
-            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-triangle-exclamation"></i></span><span class="kpi-title">Overdue</span></div>
-            <div class="kpi-value" id="k_overdue">0</div>
-            <div class="kpi-foot">Immediate follow-up</div>
-          </div>
+          <div class="kpi-card"><div class="kpi-top"><span class="kpi-icon"><i class="fas fa-boxes-stacked"></i></span><span class="kpi-title">Total Equipment</span></div><div class="kpi-value" id="k_total">0</div><div class="kpi-foot">All tracked assets</div></div>
+          <div class="kpi-card"><div class="kpi-top"><span class="kpi-icon"><i class="fas fa-person-digging"></i></span><span class="kpi-title">Active Checkouts</span></div><div class="kpi-value" id="k_inuse">0</div><div class="kpi-foot">Currently assigned</div></div>
+          <div class="kpi-card warn"><div class="kpi-top"><span class="kpi-icon"><i class="fas fa-hourglass-half"></i></span><span class="kpi-title">Due This Week</span></div><div class="kpi-value" id="k_due">0</div><div class="kpi-foot">Return window risk</div></div>
+          <div class="kpi-card danger"><div class="kpi-top"><span class="kpi-icon"><i class="fas fa-triangle-exclamation"></i></span><span class="kpi-title">Overdue</span></div><div class="kpi-value" id="k_overdue">0</div><div class="kpi-foot">Immediate follow-up</div></div>
         </div>
 
         <div class="board">
           <div class="col available">
-            <div class="col-head">
-              <div class="col-title">Available</div>
-              <div class="col-badge" id="c_available">0</div>
-            </div>
+            <div class="col-head"><div class="col-title">Available</div><div class="col-badge" id="c_available">0</div></div>
             <div class="col-body" id="list_available"></div>
           </div>
 
           <div class="col inuse">
-            <div class="col-head">
-              <div class="col-title">In Use</div>
-              <div class="col-badge" id="c_inuse">0</div>
-            </div>
+            <div class="col-head"><div class="col-title">In Use</div><div class="col-badge" id="c_inuse">0</div></div>
             <div class="col-body" id="list_inuse"></div>
           </div>
 
           <div class="col returndue">
-            <div class="col-head">
-              <div class="col-title">Return Due</div>
-              <div class="col-badge" id="c_due">0</div>
-            </div>
+            <div class="col-head"><div class="col-title">Return Due</div><div class="col-badge" id="c_due">0</div></div>
             <div class="col-body" id="list_due"></div>
           </div>
 
           <div class="col overdue">
-            <div class="col-head">
-              <div class="col-title">Overdue</div>
-              <div class="col-badge" id="c_overdue">0</div>
-            </div>
+            <div class="col-head"><div class="col-title">Overdue</div><div class="col-badge" id="c_overdue">0</div></div>
             <div class="col-body" id="list_overdue"></div>
           </div>
         </div>
       </section>
 
-      <!-- CALENDAR (still local for now) -->
       <section id="calendar-page" class="page">
         <div class="page-head">
           <h2>Schedule Calendar</h2>
@@ -390,206 +365,166 @@ $c = @'
         <div class="calendar-wrap">
           <div class="mini-months" aria-label="Mini month ribbon">
             <button class="mm-nav mm-prev" id="mmPrev" title="Previous month"><i class="fas fa-chevron-left"></i></button>
-
             <div class="mini-month" id="miniM2" aria-label="Two months back"></div>
             <div class="mini-month" id="miniM1" aria-label="Previous month"></div>
             <div class="mini-month is-selected" id="miniM0" aria-label="Selected month"></div>
             <div class="mini-month" id="miniP1" aria-label="Next month"></div>
             <div class="mini-month" id="miniP2" aria-label="Two months ahead"></div>
-
             <button class="mm-nav mm-next" id="mmNext" title="Next month"><i class="fas fa-chevron-right"></i></button>
           </div>
 
           <div id="calendar"></div>
         </div>
       </section>
-
     </main>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
 <script>
-/* =========================
-   BRANDING + CLOCK
-   ========================= */
-const BRANDING = {
-  railBadge: "CU",
-  companyLogoPath: "./company-logo.png"
-};
-
+// LLT_ADMIN_GLOBAL_V2 (must be var to avoid TDZ)
+var _isAdmin = false;
+const BRANDING = { railBadge: "CU", companyLogoPath: "./company-logo.png" };
 let _cal = null;
 
 function updateClock(){
   const now = new Date();
   const el = document.getElementById("liveDate");
-  if (!el) return;
-
-  const fmt = new Intl.DateTimeFormat(undefined, {
-    weekday: "short",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit"
-  });
-
+  if(!el) return;
+  const fmt = new Intl.DateTimeFormat(undefined,{weekday:"short",year:"numeric",month:"2-digit",day:"2-digit",hour:"numeric",minute:"2-digit",second:"2-digit"});
   el.textContent = fmt.format(now);
 }
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(updateClock,1000); updateClock();
 
 function applyBranding(){
-  const rb = document.getElementById("railBadge");
-  if (rb) rb.textContent = BRANDING.railBadge || "CO";
-
-  const cLogo = document.getElementById("companyLogo");
-  if (cLogo) cLogo.src = BRANDING.companyLogoPath;
+  const rb=document.getElementById("railBadge"); if(rb) rb.textContent=BRANDING.railBadge||"CO";
+  const cLogo=document.getElementById("companyLogo"); if(cLogo) cLogo.src=BRANDING.companyLogoPath;
 }
 
 function setActivePage(page){
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
-  document.getElementById(page + "-page")?.classList.add("is-active");
-
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
-  document.querySelectorAll(".rail-btn").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
-  document.querySelectorAll(".rail-home").forEach(b => b.classList.toggle("is-active", page === "dashboard"));
-
-  if (page === "calendar") startCalendar();
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("is-active"));
+  document.getElementById(page+"-page")?.classList.add("is-active");
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("is-active",b.dataset.page===page));
+  document.querySelectorAll(".rail-btn").forEach(b=>b.classList.toggle("is-active",b.dataset.page===page));
+  document.querySelectorAll(".rail-home").forEach(b=>b.classList.toggle("is-active",page==="dashboard"));
+  if(page==="calendar") startCalendar();
 }
-
-document.addEventListener("click", (e) => {
-  const tab = e.target.closest(".tab");
-  const railBtn = e.target.closest("button");
-  if (tab && tab.dataset.page) setActivePage(tab.dataset.page);
-  if (railBtn && railBtn.dataset.page) setActivePage(railBtn.dataset.page);
+document.addEventListener("click",(e)=>{
+  const tab=e.target.closest(".tab");
+  const railBtn=e.target.closest("button");
+  if(tab&&tab.dataset.page) setActivePage(tab.dataset.page);
+  if(railBtn&&railBtn.dataset.page) setActivePage(railBtn.dataset.page);
 });
 
-/* =========================
-   SUPABASE AUTH + DATA
-   ========================= */
-const SUPABASE_URL = "https://dgqmogvwduyprfycqprn.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_2G2_zfR4acV8sHdYaDOT4g_g0XOj9tL";
+const SUPABASE_URL="https://dgqmogvwduyprfycqprn.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_2G2_zfR4acV8sHdYaDOT4g_g0XOj9tL";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 
-/* use `sb` to avoid name collisions */
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const authGate=document.getElementById("auth-gate");
+const appShell=document.querySelector(".app-shell");
+const loginForm=document.getElementById("loginForm");
+const loginError=document.getElementById("loginError");
+const logoutBtn=document.getElementById("logoutBtn");
 
-const authGate = document.getElementById("auth-gate");
-const appShell = document.querySelector(".app-shell");
-const loginForm = document.getElementById("loginForm");
-const loginError = document.getElementById("loginError");
-const logoutBtn = document.getElementById("logoutBtn");
-
-/* dashboard elements */
-const els = {
-  hk_total: document.getElementById("hk_total"),
-  hk_due: document.getElementById("hk_due"),
-  hk_overdue: document.getElementById("hk_overdue"),
-
-  k_total: document.getElementById("k_total"),
-  k_inuse: document.getElementById("k_inuse"),
-  k_due: document.getElementById("k_due"),
-  k_overdue: document.getElementById("k_overdue"),
-
-  c_available: document.getElementById("c_available"),
-  c_inuse: document.getElementById("c_inuse"),
-  c_due: document.getElementById("c_due"),
-  c_overdue: document.getElementById("c_overdue"),
-
-  list_available: document.getElementById("list_available"),
-  list_inuse: document.getElementById("list_inuse"),
-  list_due: document.getElementById("list_due"),
-  list_overdue: document.getElementById("list_overdue"),
-
-  quickSearch: document.getElementById("quickSearch"),
+const els={
+  hk_total:document.getElementById("hk_total"),
+  hk_due:document.getElementById("hk_due"),
+  hk_overdue:document.getElementById("hk_overdue"),
+  k_total:document.getElementById("k_total"),
+  k_inuse:document.getElementById("k_inuse"),
+  k_due:document.getElementById("k_due"),
+  k_overdue:document.getElementById("k_overdue"),
+  c_available:document.getElementById("c_available"),
+  c_inuse:document.getElementById("c_inuse"),
+  c_due:document.getElementById("c_due"),
+  c_overdue:document.getElementById("c_overdue"),
+  list_available:document.getElementById("list_available"),
+  list_inuse:document.getElementById("list_inuse"),
+  list_due:document.getElementById("list_due"),
+  list_overdue:document.getElementById("list_overdue"),
+  quickSearch:document.getElementById("quickSearch"),
+  btnAddEquipment:document.getElementById("btnAddEquipment"),
 };
 
-let _statusRows = [];
-let _refreshTimer = null;
-let _userId = null;
+let _statusRows=[];
+let _refreshTimer=null;
+let _userId=null;
 
-/* checkout modal refs */
-const co = {
-  backdrop: document.getElementById("checkoutBackdrop"),
-  close: document.getElementById("checkoutClose"),
-  cancel: document.getElementById("checkoutCancel"),
-  save: document.getElementById("checkoutSave"),
-  hint: document.getElementById("checkoutHint"),
-  assetLabel: document.getElementById("coAssetLabel"),
-  to: document.getElementById("coTo"),
-  site: document.getElementById("coSite"),
-  due: document.getElementById("coDue"),
-  cond: document.getElementById("coCond"),
-  notes: document.getElementById("coNotes"),
+const eq={
+  backdrop:document.getElementById("equipBackdrop"),
+  close:document.getElementById("equipClose"),
+  cancel:document.getElementById("equipCancel"),
+  save:document.getElementById("equipSave"),
+  hint:document.getElementById("equipHint"),
+  title:document.getElementById("eqTitle"),
+  modeLabel:document.getElementById("eqModeLabel"),
+  saveLabel:document.getElementById("eqSaveLabel"),
+  assetId:document.getElementById("eqAssetId"),
+  name:document.getElementById("eqName"),
+  category:document.getElementById("eqCategory"),
+  condition:document.getElementById("eqCondition"),
+  notes:document.getElementById("eqNotes"),
 };
-let _checkoutContext = null;
+let _equipMode=null; let _equipRow=null; let _equipOrigAssetId=null;
 
-/* return modal refs */
-const rt = {
-  backdrop: document.getElementById("returnBackdrop"),
-  close: document.getElementById("returnClose"),
-  cancel: document.getElementById("returnCancel"),
-  save: document.getElementById("returnSave"),
-  hint: document.getElementById("returnHint"),
-  assetLabel: document.getElementById("rtAssetLabel"),
-  cond: document.getElementById("rtCond"),
-  notes: document.getElementById("rtNotes"),
-  at: document.getElementById("rtAt"),
+const co={
+  backdrop:document.getElementById("checkoutBackdrop"),
+  close:document.getElementById("checkoutClose"),
+  cancel:document.getElementById("checkoutCancel"),
+  save:document.getElementById("checkoutSave"),
+  hint:document.getElementById("checkoutHint"),
+  assetLabel:document.getElementById("coAssetLabel"),
+  to:document.getElementById("coTo"),
+  site:document.getElementById("coSite"),
+  due:document.getElementById("coDue"),
+  cond:document.getElementById("coCond"),
+  notes:document.getElementById("coNotes"),
 };
-let _returnContext = null;
+let _checkoutContext=null;
 
-function setText(el, v){ if(el) el.textContent = String(v ?? ""); }
+const rt={
+  backdrop:document.getElementById("returnBackdrop"),
+  close:document.getElementById("returnClose"),
+  cancel:document.getElementById("returnCancel"),
+  save:document.getElementById("returnSave"),
+  hint:document.getElementById("returnHint"),
+  assetLabel:document.getElementById("rtAssetLabel"),
+  cond:document.getElementById("rtCond"),
+  notes:document.getElementById("rtNotes"),
+  at:document.getElementById("rtAt"),
+};
+let _returnContext=null;
 
-function esc(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#39;");
-}
-
-function fmtDateShort(iso){
-  if(!iso) return "";
-  const d = new Date(iso);
-  if(isNaN(d.getTime())) return "";
-  return new Intl.DateTimeFormat(undefined, { year:"numeric", month:"2-digit", day:"2-digit" }).format(d);
-}
+function setText(el,v){ if(el) el.textContent=String(v??""); }
+function esc(s){ return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
+function fmtDateShort(iso){ if(!iso) return ""; const d=new Date(iso); if(isNaN(d.getTime())) return ""; return new Intl.DateTimeFormat(undefined,{year:"numeric",month:"2-digit",day:"2-digit"}).format(d); }
 
 function cardHTML(r){
-  const title = esc(r.name || "Unnamed");
-  const asset = esc(r.asset_id || "");
-  const cat = esc(r.category || "");
-  const who = esc(r.checked_out_to || "");
-  const site = esc(r.site || "");
-  const due = r.expected_return_at ? fmtDateShort(r.expected_return_at) : "";
-  const days = (r.days_to_due === null || r.days_to_due === undefined) ? "" : `${r.days_to_due}d`;
-  const st = String(r.status || "").toLowerCase();
+  const title=esc(r.name||"Unnamed");
+  const asset=esc(r.asset_id||"");
+  const cat=esc(r.category||"");
+  const who=esc(r.checked_out_to||"");
+  const site=esc(r.site||"");
+  const due=r.expected_return_at?fmtDateShort(r.expected_return_at):"";
+  const days=(r.days_to_due===null||r.days_to_due===undefined)?"":`${r.days_to_due}d`;
+  const st=String(r.status||"").toLowerCase();
 
-  const metaLeft = cat ? `<div class="meta"><i class="fas fa-tag"></i> ${cat}</div>` : "";
-  const metaWho  = who ? `<div class="meta"><i class="fas fa-user"></i> ${who}</div>` : "";
-  const metaSite = site ? `<div class="meta"><i class="fas fa-location-dot"></i> ${site}</div>` : "";
-  const metaDue  = due ? `<div class="meta"><i class="fas fa-calendar-day"></i> Due ${due} ${days ? `(${days})` : ""}</div>` : "";
+  const metaLeft=cat?`<div class="meta"><i class="fas fa-tag"></i> ${cat}</div>`:"";
+  const metaWho=who?`<div class="meta"><i class="fas fa-user"></i> ${who}</div>`:"";
+  const metaSite=site?`<div class="meta"><i class="fas fa-location-dot"></i> ${site}</div>`:"";
+  const metaDue=due?`<div class="meta"><i class="fas fa-calendar-day"></i> Due ${due} ${days?`(${days})`:""}</div>`:"";
 
-  const canCheckout = (st === "available");
-  const canReturn = (st === "in use" || st === "overdue"); // Return Due is still "in use" in your view; it will fall into this anyway via UI lists
-
-  let actions = "";
+  const canCheckout=(st==="available");
+  let actions="";
   if(canCheckout){
-    actions = `<div class="card-actions">
-         <button class="mini-btn js-checkout" data-asset="${asset}">
-           <i class="fas fa-right-to-bracket"></i> Check out
-         </button>
-       </div>`;
+    actions=`<div class="card-actions">
+      <button class="mini-btn js-checkout" data-asset="${asset}"><i class="fas fa-right-to-bracket"></i> Check out</button>
+      <button class="mini-btn edit js-edit" data-asset="${asset}"><i class="fas fa-pen"></i> Edit</button>
+    </div>`;
   }else{
-    // show Return on anything not Available (In Use / Return Due / Overdue)
-    actions = `<div class="card-actions">
-         <button class="mini-btn return js-return" data-asset="${asset}">
-           <i class="fas fa-rotate-left"></i> Return
-         </button>
-       </div>`;
+    actions=`<div class="card-actions">
+      <button class="mini-btn return js-return" data-asset="${asset}"><i class="fas fa-rotate-left"></i> Return</button>
+    </div>`;
   }
 
   return `
@@ -599,10 +534,7 @@ function cardHTML(r){
         <div class="card-id">${asset}</div>
       </div>
       <div class="card-meta">
-        ${metaLeft}
-        ${metaWho}
-        ${metaSite}
-        ${metaDue}
+        ${metaLeft}${metaWho}${metaSite}${metaDue}
       </div>
       ${actions}
     </div>
@@ -610,626 +542,803 @@ function cardHTML(r){
 }
 
 function renderLists(rows){
-  const q = (els.quickSearch?.value || "").trim().toLowerCase();
-
-  const filtered = !q ? rows : rows.filter(r => {
-    const hay = [
-      r.asset_id, r.name, r.category, r.checked_out_to, r.site
-    ].map(x => String(x || "").toLowerCase()).join(" | ");
+  const q=(els.quickSearch?.value||"").trim().toLowerCase();
+  const filtered=!q?rows:rows.filter(r=>{
+    const hay=[r.asset_id,r.name,r.category,r.checked_out_to,r.site].map(x=>String(x||"").toLowerCase()).join(" | ");
     return hay.includes(q);
   });
 
-  const available = [];
-  const inuse = [];
-  const due = [];
-  const overdue = [];
-
+  const available=[],inuse=[],due=[],overdue=[];
   for(const r of filtered){
-    const st = (r.status || "").toLowerCase();
-    const dtd = (r.days_to_due === null || r.days_to_due === undefined) ? null : Number(r.days_to_due);
-
-    if(st === "available"){
-      available.push(r);
-      continue;
-    }
-
-    if(st === "overdue"){
-      overdue.push(r);
-      continue;
-    }
-
-    if(st === "in use"){
-      if(dtd !== null && dtd >= 0 && dtd <= 7) due.push(r);
+    const st=(r.status||"").toLowerCase();
+    const dtd=(r.days_to_due===null||r.days_to_due===undefined)?null:Number(r.days_to_due);
+    if(st==="available"){ available.push(r); continue; }
+    if(st==="overdue"){ overdue.push(r); continue; }
+    if(st==="in use"){
+      if(dtd!==null && dtd>=0 && dtd<=7) due.push(r);
       else inuse.push(r);
-      continue;
     }
   }
 
-  setText(els.c_available, available.length);
-  setText(els.c_inuse, inuse.length);
-  setText(els.c_due, due.length);
-  setText(els.c_overdue, overdue.length);
+  setText(els.c_available,available.length);
+  setText(els.c_inuse,inuse.length);
+  setText(els.c_due,due.length);
+  setText(els.c_overdue,overdue.length);
 
-  if(els.list_available) els.list_available.innerHTML = available.map(cardHTML).join("");
-  if(els.list_inuse) els.list_inuse.innerHTML = inuse.map(cardHTML).join("");
-  if(els.list_due) els.list_due.innerHTML = due.map(cardHTML).join("");
-  if(els.list_overdue) els.list_overdue.innerHTML = overdue.map(cardHTML).join("");
+  if(els.list_available) els.list_available.innerHTML=available.map(cardHTML).join("");
+  if(els.list_inuse) els.list_inuse.innerHTML=inuse.map(cardHTML).join("");
+  if(els.list_due) els.list_due.innerHTML=due.map(cardHTML).join("");
+  if(els.list_overdue) els.list_overdue.innerHTML=overdue.map(cardHTML).join("");
 }
 
 function renderKPIs(allRows){
-  const total = allRows.length;
-
-  let active = 0;
-  let dueWeek = 0;
-  let overdue = 0;
-
+  const total=allRows.length;
+  let active=0,dueWeek=0,overdue=0;
   for(const r of allRows){
-    const st = (r.status || "").toLowerCase();
-    const dtd = (r.days_to_due === null || r.days_to_due === undefined) ? null : Number(r.days_to_due);
-
-    if(st === "in use" || st === "overdue") active++;
-    if(st === "overdue") overdue++;
-    if(st === "in use" && dtd !== null && dtd >= 0 && dtd <= 7) dueWeek++;
+    const st=(r.status||"").toLowerCase();
+    const dtd=(r.days_to_due===null||r.days_to_due===undefined)?null:Number(r.days_to_due);
+    if(st==="in use"||st==="overdue") active++;
+    if(st==="overdue") overdue++;
+    if(st==="in use" && dtd!==null && dtd>=0 && dtd<=7) dueWeek++;
   }
-
-  setText(els.hk_total, total);
-  setText(els.hk_due, dueWeek);
-  setText(els.hk_overdue, overdue);
-
-  setText(els.k_total, total);
-  setText(els.k_inuse, active);
-  setText(els.k_due, dueWeek);
-  setText(els.k_overdue, overdue);
+  setText(els.hk_total,total); setText(els.hk_due,dueWeek); setText(els.hk_overdue,overdue);
+  setText(els.k_total,total); setText(els.k_inuse,active); setText(els.k_due,dueWeek); setText(els.k_overdue,overdue);
 }
 
 async function fetchEquipmentStatus(){
-  const { data, error } = await sb
-    .from("equipment_status")
-    .select("*")
-    .order("asset_id", { ascending: true });
-
+  const {data,error}=await sb.from("equipment_status").select("*").order("asset_id",{ascending:true});
   if(error){
-    console.error("equipment_status fetch error:", error);
-    _statusRows = [];
-    renderKPIs(_statusRows);
-    renderLists(_statusRows);
-    return;
+    console.error("equipment_status fetch error:",error);
+    _statusRows=[]; renderKPIs(_statusRows); renderLists(_statusRows); return;
   }
-
-  _statusRows = Array.isArray(data) ? data : [];
+  _statusRows=Array.isArray(data)?data:[];
   renderKPIs(_statusRows);
   renderLists(_statusRows);
 }
 
 function wireSearch(){
   if(!els.quickSearch || els.quickSearch.dataset.wired) return;
-  els.quickSearch.addEventListener("input", () => renderLists(_statusRows));
-  els.quickSearch.dataset.wired = "1";
+  els.quickSearch.addEventListener("input",()=>renderLists(_statusRows));
+  els.quickSearch.dataset.wired="1";
 }
-
 function startDashboardRefresh(){
   if(_refreshTimer) clearInterval(_refreshTimer);
-  _refreshTimer = setInterval(fetchEquipmentStatus, 30000); // 30s
-}
-
-/* ---------- Checkout Modal ---------- */
-function openCheckoutModal(row){
-  _checkoutContext = row || null;
-  if(!co.backdrop) return;
-
-  co.hint.textContent = "";
-  const asset = row?.asset_id || "--";
-  const name = row?.name || "";
-  co.assetLabel.textContent = name ? `${asset} — ${name}` : asset;
-
-  co.to.value = row?.checked_out_to || "";
-  co.site.value = row?.site || "";
-  co.cond.value = row?.condition || "";
-  co.notes.value = "";
-
-  // default due date: +7 days
-  const d = new Date();
-  d.setDate(d.getDate() + 7);
-  const iso = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0,10);
-  co.due.value = iso;
-
-  co.backdrop.style.display = "flex";
-  co.backdrop.setAttribute("aria-hidden", "false");
-  setTimeout(()=> co.to.focus(), 0);
-}
-
-function closeCheckoutModal(){
-  _checkoutContext = null;
-  if(!co.backdrop) return;
-  co.backdrop.style.display = "none";
-  co.backdrop.setAttribute("aria-hidden", "true");
+  _refreshTimer=setInterval(fetchEquipmentStatus,30000);
 }
 
 async function resolveEquipmentIdByAssetId(assetId){
-  const { data, error } = await sb
-    .from("equipment")
-    .select("id")
-    .eq("asset_id", assetId)
-    .limit(1);
-
+  const {data,error}=await sb.from("equipment").select("id").eq("asset_id",assetId).limit(1);
   if(error) throw error;
-  const id = data?.[0]?.id;
-  if(!id) throw new Error("Equipment not found for asset_id: " + assetId);
+  const id=data?.[0]?.id;
+  if(!id) throw new Error("Equipment not found for asset_id: "+assetId);
   return id;
 }
+async function canEditAssetNow(assetId){
+  const {data,error}=await sb.from("equipment_status").select("status").eq("asset_id",assetId).limit(1);
+  if(error) throw error;
+  const st=String(data?.[0]?.status||"").toLowerCase();
+  return st==="available";
+}
 
-async function saveCheckout(){
-  if(!_userId){
-    co.hint.textContent = "Not signed in.";
-    return;
-  }
-  const row = _checkoutContext;
-  const assetId = row?.asset_id;
-  if(!assetId){
-    co.hint.textContent = "Missing asset.";
-    return;
-  }
+/* ---------- Equipment Add/Edit ---------- */
+function openEquipModal(mode){
+  _equipMode=mode;
+  eq.hint.textContent="";
+  eq.modeLabel.textContent=mode==="add"?"Add":"Edit";
+  eq.saveLabel.textContent=mode==="add"?"Add Equipment":"Save Changes";
+  eq.title.innerHTML=mode==="add"
+    ? '<i class="fas fa-plus"></i> Add Equipment'
+    : '<i class="fas fa-pen"></i> Edit Equipment';
 
-  const checkedOutTo = (co.to.value || "").trim();
-  const site = (co.site.value || "").trim();
-  const due = co.due.value; // YYYY-MM-DD
-  const notes = (co.notes.value || "").trim();
-  const condOut = (co.cond.value || "").trim();
-
-  if(!checkedOutTo){
-    co.hint.textContent = "Enter 'Checked out to'.";
-    return;
-  }
-  if(!due){
-    co.hint.textContent = "Select expected return date.";
-    return;
+  if(mode==="add"){
+    _equipRow=null; _equipOrigAssetId=null;
+    eq.assetId.value=""; eq.name.value=""; eq.category.value=""; eq.condition.value=""; eq.notes.value="";
+    eq.save.disabled=false;
   }
 
-  co.hint.textContent = "";
+  eq.backdrop.style.display="flex";
+  eq.backdrop.setAttribute("aria-hidden","false");
+  setTimeout(()=>eq.assetId.focus(),0);
+}
+function closeEquipModal(){
+  _equipMode=null; _equipRow=null; _equipOrigAssetId=null;
+  eq.backdrop.style.display="none";
+  eq.backdrop.setAttribute("aria-hidden","true");
+}
+async function loadEquipmentByAssetId(assetId){
+  const {data,error}=await sb.from("equipment").select("id, asset_id, name, category, condition, notes").eq("asset_id",assetId).limit(1);
+  if(error) throw error;
+  const row=data?.[0];
+  if(!row?.id) throw new Error("Equipment not found.");
+  return row;
+}
+async function ensureAssetIdUnique(assetId, ignoreId){
+  const {data,error}=await sb.from("equipment").select("id").eq("asset_id",assetId).limit(1);
+  if(error) throw error;
+  const found=data?.[0]?.id;
+  if(found && String(found)!==String(ignoreId||"")) throw new Error("Asset ID already exists: "+assetId);
+}
+async function saveEquipment(){
+  if(!_userId){ eq.hint.textContent="Not signed in."; return; }
+  const mode=_equipMode;
+  if(mode!=="add" && mode!=="edit"){ eq.hint.textContent="Invalid mode."; return; }
+
+  const assetId=(eq.assetId.value||"").trim();
+  const name=(eq.name.value||"").trim();
+  const category=(eq.category.value||"").trim();
+  const condition=(eq.condition.value||"").trim();
+  const notes=(eq.notes.value||"").trim();
+
+  if(!assetId){ eq.hint.textContent="Asset ID is required."; return; }
+  if(!name){ eq.hint.textContent="Name is required."; return; }
+
+  eq.hint.textContent="";
 
   try{
-    const equipmentId =
-      row?.equipment_id ||
-      row?.id ||                 // if your view exposes equipment id as id
-      await resolveEquipmentIdByAssetId(assetId);
+    if(mode==="add"){
+      await ensureAssetIdUnique(assetId,null);
+      const payload={ asset_id:assetId, name, category:category||null, condition:condition||null, notes:notes||null };
+      const {error}=await sb.from("equipment").insert(payload);
+      if(error) throw error;
+      closeEquipModal();
+      await fetchEquipmentStatus();
+      return;
+    }
 
-    const expected = new Date(due + "T00:00:00");
-    if(isNaN(expected.getTime())) throw new Error("Invalid due date.");
+    if(!_equipRow?.id) throw new Error("Missing equipment record.");
 
-    const payload = {
-      equipment_id: equipmentId,
-      checked_out_by: _userId,
-      checked_out_to: checkedOutTo,
-      site: site || null,
-      expected_return_at: expected.toISOString(),
-      notes: notes || null
-    };
+    const editable=await canEditAssetNow(_equipOrigAssetId || _equipRow.asset_id);
+    if(!editable) throw new Error("Cannot edit while asset is checked out.");
 
-    const { error } = await sb.from("checkouts").insert(payload);
+    if(String(assetId)!==String(_equipOrigAssetId || _equipRow.asset_id)){
+      await ensureAssetIdUnique(assetId,_equipRow.id);
+    }
+
+    const patch={ asset_id:assetId, name, category:category||null, condition:condition||null, notes:notes||null };
+    const {error}=await sb.from("equipment").update(patch).eq("id",_equipRow.id);
     if(error) throw error;
 
-    // optionally set equipment condition note (not required)
-    if(condOut){
-      await sb.from("equipment").update({ condition: condOut }).eq("asset_id", assetId);
+    closeEquipModal();
+    await fetchEquipmentStatus();
+  }catch(err){
+    console.error(err);
+    eq.hint.textContent=err?.message || "Save failed.";
+  }
+}
+function wireEquipModal(){
+  if(!eq.backdrop || eq.backdrop.dataset.wired) return;
+  eq.close.addEventListener("click",closeEquipModal);
+  eq.cancel.addEventListener("click",closeEquipModal);
+  eq.backdrop.addEventListener("click",(e)=>{ if(e.target===eq.backdrop) closeEquipModal(); });
+  eq.save.addEventListener("click",saveEquipment);
+  eq.backdrop.dataset.wired="1";
+}
+function wireAddEquipmentButton(){
+  if(!els.btnAddEquipment || els.btnAddEquipment.dataset.wired) return;
+  els.btnAddEquipment.addEventListener("click",()=>openEquipModal("add"));
+  els.btnAddEquipment.dataset.wired="1";
+}
+
+/* EDIT FIX: open modal immediately, show loading state, then populate */
+function wireEditButtons(){
+  if(!els.list_available || els.list_available.dataset.editWired) return;
+
+  els.list_available.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".js-edit");
+    if(!btn) return;
+
+    const asset = btn.getAttribute("data-asset");
+    const row = _statusRows.find(r => String(r.asset_id) === String(asset));
+    if(!row) return;
+
+    const st = String(row.status || "").toLowerCase();
+    if(st !== "available") return;
+
+    // open immediately (so user sees something happen)
+    _equipMode = "edit";
+    _equipRow = null;
+    _equipOrigAssetId = asset;
+
+    openEquipModal("edit");
+    eq.hint.textContent = "Loading...";
+    eq.save.disabled = true;
+
+    // prefill with what we have from the status view (best-effort)
+    eq.assetId.value = row.asset_id || "";
+    eq.name.value = row.name || "";
+    eq.category.value = row.category || "";
+    eq.condition.value = row.condition || "";
+    eq.notes.value = row.notes || "";
+
+    try{
+      const equip = await loadEquipmentByAssetId(asset);
+      _equipRow = equip;
+      _equipOrigAssetId = equip.asset_id;
+
+      eq.assetId.value = equip.asset_id || "";
+      eq.name.value = equip.name || "";
+      eq.category.value = equip.category || "";
+      eq.condition.value = equip.condition || "";
+      eq.notes.value = equip.notes || "";
+
+      eq.hint.textContent = "";
+      eq.save.disabled = false;
+    }catch(err){
+      console.error(err);
+      eq.hint.textContent = err?.message || "Failed to load equipment (RLS/permissions).";
+      eq.save.disabled = true;
     }
+  });
+
+  els.list_available.dataset.editWired = "1";
+}
+/* ---------- end equipment add/edit ---------- */
+
+/* ---------- Checkout ---------- */
+function openCheckoutModal(row){
+  _checkoutContext=row||null;
+  if(!co.backdrop) return;
+
+  co.hint.textContent="";
+  const asset=row?.asset_id||"--";
+  const name=row?.name||"";
+  co.assetLabel.textContent=name?`${asset} — ${name}`:asset;
+
+  co.to.value=row?.checked_out_to||"";
+  co.site.value=row?.site||"";
+  co.cond.value=row?.condition||"";
+  co.notes.value="";
+
+  const d=new Date(); d.setDate(d.getDate()+7);
+  const iso=new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString().slice(0,10);
+  co.due.value=iso;
+
+  co.backdrop.style.display="flex";
+  co.backdrop.setAttribute("aria-hidden","false");
+  setTimeout(()=>co.to.focus(),0);
+}
+function closeCheckoutModal(){
+  _checkoutContext=null;
+  if(!co.backdrop) return;
+  co.backdrop.style.display="none";
+  co.backdrop.setAttribute("aria-hidden","true");
+}
+async function saveCheckout(){
+  if(!_userId){ co.hint.textContent="Not signed in."; return; }
+  const row=_checkoutContext;
+  const assetId=row?.asset_id;
+  if(!assetId){ co.hint.textContent="Missing asset."; return; }
+
+  const checkedOutTo=(co.to.value||"").trim();
+  const site=(co.site.value||"").trim();
+  const due=co.due.value;
+  const notes=(co.notes.value||"").trim();
+  const condOut=(co.cond.value||"").trim();
+
+  if(!checkedOutTo){ co.hint.textContent="Enter 'Checked out to'."; return; }
+  if(!due){ co.hint.textContent="Select expected return date."; return; }
+
+  co.hint.textContent="";
+
+  try{
+    const equipmentId=row?.equipment_id || row?.id || await resolveEquipmentIdByAssetId(assetId);
+    const expected=new Date(due+"T00:00:00");
+    if(isNaN(expected.getTime())) throw new Error("Invalid due date.");
+
+    const payload={ equipment_id:equipmentId, checked_out_by:_userId, checked_out_to:checkedOutTo, site:site||null, expected_return_at:expected.toISOString(), notes:notes||null };
+    const {error}=await sb.from("checkouts").insert(payload);
+    if(error) throw error;
+
+    if(condOut){ await sb.from("equipment").update({condition:condOut}).eq("asset_id",assetId); }
 
     closeCheckoutModal();
     await fetchEquipmentStatus();
   }catch(err){
     console.error(err);
-    co.hint.textContent = err?.message || "Checkout failed.";
+    co.hint.textContent=err?.message || "Checkout failed.";
   }
 }
-
 function wireCheckoutModal(){
   if(!co.backdrop || co.backdrop.dataset.wired) return;
-
-  co.close.addEventListener("click", closeCheckoutModal);
-  co.cancel.addEventListener("click", closeCheckoutModal);
-  co.backdrop.addEventListener("click", (e) => {
-    if(e.target === co.backdrop) closeCheckoutModal();
-  });
-
-  co.save.addEventListener("click", saveCheckout);
-
-  co.backdrop.dataset.wired = "1";
+  co.close.addEventListener("click",closeCheckoutModal);
+  co.cancel.addEventListener("click",closeCheckoutModal);
+  co.backdrop.addEventListener("click",(e)=>{ if(e.target===co.backdrop) closeCheckoutModal(); });
+  co.save.addEventListener("click",saveCheckout);
+  co.backdrop.dataset.wired="1";
 }
-
-/* Delegated click for checkout buttons */
 function wireCheckoutButtons(){
-  if(!els.list_available || els.list_available.dataset.wired) return;
-
-  els.list_available.addEventListener("click", (e) => {
-    const btn = e.target.closest(".js-checkout");
+  if(!els.list_available || els.list_available.dataset.checkoutWired) return;
+  els.list_available.addEventListener("click",(e)=>{
+    const btn=e.target.closest(".js-checkout");
     if(!btn) return;
-    const asset = btn.getAttribute("data-asset");
-    const row = _statusRows.find(r => String(r.asset_id) === String(asset));
+    const asset=btn.getAttribute("data-asset");
+    const row=_statusRows.find(r=>String(r.asset_id)===String(asset));
     if(!row) return;
     openCheckoutModal(row);
   });
-
-  els.list_available.dataset.wired = "1";
+  els.list_available.dataset.checkoutWired="1";
 }
 /* ---------- end checkout ---------- */
 
-/* ---------- Return Modal ---------- */
+/* ---------- Return ---------- */
 function openReturnModal(row){
-  _returnContext = row || null;
+  _returnContext=row||null;
   if(!rt.backdrop) return;
 
-  rt.hint.textContent = "";
+  rt.hint.textContent="";
+  const asset=row?.asset_id||"--";
+  const name=row?.name||"";
+  rt.assetLabel.textContent=name?`${asset} — ${name}`:asset;
 
-  const asset = row?.asset_id || "--";
-  const name = row?.name || "";
-  rt.assetLabel.textContent = name ? `${asset} — ${name}` : asset;
+  rt.cond.value=""; rt.notes.value="";
+  const now=new Date();
+  rt.at.value=new Intl.DateTimeFormat(undefined,{year:"numeric",month:"2-digit",day:"2-digit",hour:"numeric",minute:"2-digit",second:"2-digit"}).format(now);
 
-  rt.cond.value = "";
-  rt.notes.value = "";
-
-  const now = new Date();
-  rt.at.value = new Intl.DateTimeFormat(undefined, {
-    year:"numeric", month:"2-digit", day:"2-digit", hour:"numeric", minute:"2-digit", second:"2-digit"
-  }).format(now);
-
-  rt.backdrop.style.display = "flex";
-  rt.backdrop.setAttribute("aria-hidden", "false");
-  setTimeout(()=> rt.cond.focus(), 0);
+  rt.backdrop.style.display="flex";
+  rt.backdrop.setAttribute("aria-hidden","false");
+  setTimeout(()=>rt.cond.focus(),0);
 }
-
 function closeReturnModal(){
-  _returnContext = null;
+  _returnContext=null;
   if(!rt.backdrop) return;
-  rt.backdrop.style.display = "none";
-  rt.backdrop.setAttribute("aria-hidden", "true");
+  rt.backdrop.style.display="none";
+  rt.backdrop.setAttribute("aria-hidden","true");
 }
-
 async function getActiveCheckoutByEquipmentId(equipmentId){
-  const { data, error } = await sb
-    .from("checkouts")
-    .select("id, notes")
-    .eq("equipment_id", equipmentId)
-    .is("returned_at", null)
-    .order("created_at", { ascending: false })
-    .limit(1);
-
+  const {data,error}=await sb.from("checkouts").select("id, notes").eq("equipment_id",equipmentId).is("returned_at",null).order("created_at",{ascending:false}).limit(1);
   if(error) throw error;
-  const row = data?.[0];
+  const row=data?.[0];
   if(!row?.id) throw new Error("Active checkout not found.");
   return row;
 }
-
 async function saveReturn(){
-  if(!_userId){
-    rt.hint.textContent = "Not signed in.";
-    return;
-  }
+  if(!_userId){ rt.hint.textContent="Not signed in."; return; }
 
-  const row = _returnContext;
-  const assetId = row?.asset_id;
-  if(!assetId){
-    rt.hint.textContent = "Missing asset.";
-    return;
-  }
+  const row=_returnContext;
+  const assetId=row?.asset_id;
+  if(!assetId){ rt.hint.textContent="Missing asset."; return; }
 
-  const cond = (rt.cond.value || "").trim();
-  const notes = (rt.notes.value || "").trim();
+  const cond=(rt.cond.value||"").trim();
+  const notes=(rt.notes.value||"").trim();
+  if(!cond){ rt.hint.textContent="Enter return condition."; return; }
 
-  if(!cond){
-    rt.hint.textContent = "Enter return condition.";
-    return;
-  }
-
-  rt.hint.textContent = "";
+  rt.hint.textContent="";
 
   try{
-    const equipmentId =
-      row?.equipment_id ||
-      row?.id ||
-      await resolveEquipmentIdByAssetId(assetId);
+    const equipmentId=row?.equipment_id || row?.id || await resolveEquipmentIdByAssetId(assetId);
+    const active=await getActiveCheckoutByEquipmentId(equipmentId);
 
-    const active = await getActiveCheckoutByEquipmentId(equipmentId);
+    const nowIso=new Date().toISOString();
+    const append=notes?`\nRETURN (${nowIso}): ${notes}`:`\nRETURN (${nowIso}).`;
+    const mergedNotes=(active.notes?String(active.notes):"")+append;
 
-    const nowIso = new Date().toISOString();
-    const append = notes ? `\nRETURN (${nowIso}): ${notes}` : `\nRETURN (${nowIso}).`;
-
-    const mergedNotes = (active.notes ? String(active.notes) : "") + append;
-
-    const { error } = await sb
-      .from("checkouts")
-      .update({
-        returned_at: nowIso,
-        return_condition: cond,
-        notes: mergedNotes
-      })
-      .eq("id", active.id);
-
+    const {error}=await sb.from("checkouts").update({returned_at:nowIso, return_condition:cond, notes:mergedNotes}).eq("id",active.id);
     if(error) throw error;
 
     closeReturnModal();
     await fetchEquipmentStatus();
   }catch(err){
     console.error(err);
-    rt.hint.textContent = err?.message || "Return failed.";
+    rt.hint.textContent=err?.message || "Return failed.";
   }
 }
-
 function wireReturnModal(){
   if(!rt.backdrop || rt.backdrop.dataset.wired) return;
-
-  rt.close.addEventListener("click", closeReturnModal);
-  rt.cancel.addEventListener("click", closeReturnModal);
-  rt.backdrop.addEventListener("click", (e) => {
-    if(e.target === rt.backdrop) closeReturnModal();
-  });
-
-  rt.save.addEventListener("click", saveReturn);
-
-  rt.backdrop.dataset.wired = "1";
+  rt.close.addEventListener("click",closeReturnModal);
+  rt.cancel.addEventListener("click",closeReturnModal);
+  rt.backdrop.addEventListener("click",(e)=>{ if(e.target===rt.backdrop) closeReturnModal(); });
+  rt.save.addEventListener("click",saveReturn);
+  rt.backdrop.dataset.wired="1";
 }
-
-/* Delegated click for return buttons (In Use / Due / Overdue) */
 function wireReturnButtons(){
-  const lists = [els.list_inuse, els.list_due, els.list_overdue].filter(Boolean);
+  const lists=[els.list_inuse,els.list_due,els.list_overdue].filter(Boolean);
   if(!lists.length) return;
-
-  lists.forEach(listEl => {
+  lists.forEach(listEl=>{
     if(listEl.dataset.returnWired) return;
-
-    listEl.addEventListener("click", (e) => {
-      const btn = e.target.closest(".js-return");
+    listEl.addEventListener("click",(e)=>{
+      const btn=e.target.closest(".js-return");
       if(!btn) return;
-      const asset = btn.getAttribute("data-asset");
-      const row = _statusRows.find(r => String(r.asset_id) === String(asset));
+      const asset=btn.getAttribute("data-asset");
+      const row=_statusRows.find(r=>String(r.asset_id)===String(asset));
       if(!row) return;
       openReturnModal(row);
     });
-
-    listEl.dataset.returnWired = "1";
+    listEl.dataset.returnWired="1";
   });
 }
 /* ---------- end return ---------- */
 
-/* Global ESC handler (closes whichever modal is open) */
-document.addEventListener("keydown", (e) => {
-  if(e.key !== "Escape") return;
-  if(co.backdrop && co.backdrop.style.display === "flex") closeCheckoutModal();
-  if(rt.backdrop && rt.backdrop.style.display === "flex") closeReturnModal();
+document.addEventListener("keydown",(e)=>{
+  if(e.key!=="Escape") return;
+  if(eq.backdrop && eq.backdrop.style.display==="flex") closeEquipModal();
+  if(co.backdrop && co.backdrop.style.display==="flex") closeCheckoutModal();
+  if(rt.backdrop && rt.backdrop.style.display==="flex") closeReturnModal();
 });
 
+async function loadAdminFlag(){
+  try{
+    if(!_userId){ _isAdmin = false; return; }
+    const { data, error } = await sb
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", _userId)
+      .maybeSingle();
+    if(error) throw error;
+    _isAdmin = !!(data && data.is_admin);
+  }catch(e){
+    _isAdmin = false;
+  }
+}
 async function enforceAuthGate(){
-  const { data: { session } } = await sb.auth.getSession();
-  const authed = !!session;
+  const {data:{session}}=await sb.auth.getSession();
+  const authed=!!session;
 
-  authGate.style.display = authed ? "none" : "flex";
-  if (appShell) appShell.style.display = authed ? "" : "none";
+  authGate.style.display=authed?"none":"flex";
+  if(appShell) appShell.style.display=authed?"":"none";
 
-  _userId = session?.user?.id || null;
+  _userId=session?.user?.id||null;
 
   if(authed){
     wireSearch();
+    wireEquipModal();
+    wireAddEquipmentButton();
+    wireEditButtons();
+
     wireCheckoutModal();
     wireCheckoutButtons();
+
     wireReturnModal();
     wireReturnButtons();
+
     await fetchEquipmentStatus();
     startDashboardRefresh();
   }else{
     if(_refreshTimer) clearInterval(_refreshTimer);
-    _refreshTimer = null;
-    _statusRows = [];
+    _refreshTimer=null;
+    _statusRows=[];
   }
 }
 
-loginForm.addEventListener("submit", async (e) => {
+loginForm.addEventListener("submit",async(e)=>{
   e.preventDefault();
-  loginError.textContent = "";
-
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
-
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) loginError.textContent = error.message;
-
+  loginError.textContent="";
+  const email=document.getElementById("loginEmail").value.trim();
+  const password=document.getElementById("loginPassword").value;
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error) loginError.textContent=error.message;
   await enforceAuthGate();
 });
-
-logoutBtn.addEventListener("click", async () => {
-  await sb.auth.signOut();
-  await enforceAuthGate();
-});
-
-sb.auth.onAuthStateChange(() => {
-  enforceAuthGate();
-});
+logoutBtn.addEventListener("click",async()=>{ await sb.auth.signOut(); await enforceAuthGate(); });
+sb.auth.onAuthStateChange(()=>{ enforceAuthGate(); });
 
 /* =========================
    CALENDAR (still local)
    ========================= */
-const CAL_STORAGE_KEY = "LLT_CAL_EVENTS_V1";
+const CAL_STORAGE_KEY="LLT_CAL_EVENTS_V1";
+function loadCalEvents(){ try{ const raw=localStorage.getItem(CAL_STORAGE_KEY); if(!raw) return []; const data=JSON.parse(raw); return Array.isArray(data)?data:[]; }catch(e){ return []; } }
+function saveCalEvents(cal){ try{ const events=cal.getEvents().map(ev=>({id:ev.id||undefined,title:ev.title||"",start:ev.start?ev.start.toISOString():null,end:ev.end?ev.end.toISOString():null,allDay:!!ev.allDay})); localStorage.setItem(CAL_STORAGE_KEY,JSON.stringify(events)); }catch(e){} }
 
-function loadCalEvents(){
-  try{
-    const raw = localStorage.getItem(CAL_STORAGE_KEY);
-    if(!raw) return [];
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  }catch(e){
-    return [];
-  }
-}
-
-function saveCalEvents(cal){
-  try{
-    const events = cal.getEvents().map(ev => ({
-      id: ev.id || undefined,
-      title: ev.title || "",
-      start: ev.start ? ev.start.toISOString() : null,
-      end: ev.end ? ev.end.toISOString() : null,
-      allDay: !!ev.allDay
-    }));
-    localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify(events));
-  }catch(e){
-    // no-op
-  }
-}
-
-/* ===== Mini month previews logic ===== */
-function gotoMainDate(dt){
-  if(!_cal) return;
-  _cal.gotoDate(dt);
-  setTimeout(updateMiniMonths, 0);
-}
-
+function gotoMainDate(dt){ if(!_cal) return; _cal.gotoDate(dt); setTimeout(updateMiniMonths,0); }
 function renderMiniMonth(containerId, year, monthIndex, focusDate){
-  const el = document.getElementById(containerId);
-  if(!el) return;
+  const el=document.getElementById(containerId); if(!el) return;
+  const monthStart=new Date(year,monthIndex,1); const today=new Date();
+  const titleFmt=new Intl.DateTimeFormat(undefined,{month:"long",year:"numeric"});
+  const dow=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const gridStart=new Date(year,monthIndex,1); gridStart.setDate(gridStart.getDate()-gridStart.getDay());
 
-  const monthStart = new Date(year, monthIndex, 1);
-  const today = new Date();
+  let html='';
+  html+='<div class="mm-head"><div class="mm-title" data-goto="'+monthStart.toISOString()+'">'+titleFmt.format(monthStart)+'</div></div>';
+  html+='<table><thead><tr>'+dow.map(d=>'<th>'+d.substring(0,2)+'</th>').join('')+'</tr></thead><tbody>';
 
-  const titleFmt = new Intl.DateTimeFormat(undefined, { month:"long", year:"numeric" });
-  const dow = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-
-  const gridStart = new Date(year, monthIndex, 1);
-  gridStart.setDate(gridStart.getDate() - gridStart.getDay());
-
-  let html = '';
-  html += '<div class="mm-head">';
-  html += '  <div class="mm-title" data-goto="' + monthStart.toISOString() + '">' + titleFmt.format(monthStart) + '</div>';
-  html += '</div>';
-  html += '<table><thead><tr>' + dow.map(d => '<th>'+d.substring(0,2)+'</th>').join('') + '</tr></thead><tbody>';
-
-  let cur = new Date(gridStart);
+  let cur=new Date(gridStart);
   for(let wk=0; wk<6; wk++){
-    html += '<tr>';
+    html+='<tr>';
     for(let d=0; d<7; d++){
-      const inMonth = (cur.getMonth() === monthIndex);
-      const isOut = !inMonth;
-      const isToday = cur.toDateString() === today.toDateString();
-      const isFocus = focusDate && cur.toDateString() === focusDate.toDateString();
-
-      const cls = [
-        isOut ? "is-out" : "",
-        isToday ? "is-today" : "",
-        isFocus ? "is-focus" : ""
-      ].filter(Boolean).join(" ");
-
-      const iso = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate()).toISOString();
-
-      if(isOut){
-        html += '<td class="'+cls+'">' + cur.getDate() + '</td>';
-      }else{
-        html += '<td class="'+cls+'" data-goto="' + iso + '">' + cur.getDate() + '</td>';
-      }
+      const inMonth=(cur.getMonth()===monthIndex);
+      const isOut=!inMonth;
+      const isToday=cur.toDateString()===today.toDateString();
+      const isFocus=focusDate && cur.toDateString()===focusDate.toDateString();
+      const cls=[isOut?"is-out":"",isToday?"is-today":"",isFocus?"is-focus":""].filter(Boolean).join(" ");
+      const iso=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()).toISOString();
+      if(isOut) html+='<td class="'+cls+'">'+cur.getDate()+'</td>';
+      else html+='<td class="'+cls+'" data-goto="'+iso+'">'+cur.getDate()+'</td>';
       cur.setDate(cur.getDate()+1);
     }
-    html += '</tr>';
+    html+='</tr>';
   }
-  html += '</tbody></table>';
+  html+='</tbody></table>';
+  el.innerHTML=html;
 
-  el.innerHTML = html;
-
-  el.querySelectorAll('[data-goto]').forEach(n => {
-    n.addEventListener('click', () => {
+  el.querySelectorAll('[data-goto]').forEach(n=>{
+    n.addEventListener('click',()=>{
       if(!_cal) return;
-      const dt = new Date(n.getAttribute('data-goto'));
+      const dt=new Date(n.getAttribute('data-goto'));
       gotoMainDate(dt);
       updateMiniMonths();
     });
   });
 }
-
 function updateMiniMonths(){
   if(!_cal) return;
-
-  const focus = _cal.getDate();
-  const y = focus.getFullYear();
-  const m = focus.getMonth();
-
-  const slots = [
-    { id:"miniM2", off:-2 },
-    { id:"miniM1", off:-1 },
-    { id:"miniM0", off: 0 },
-    { id:"miniP1", off: 1 },
-    { id:"miniP2", off: 2 }
-  ];
-
+  const focus=_cal.getDate();
+  const y=focus.getFullYear();
+  const m=focus.getMonth();
+  const slots=[{id:"miniM2",off:-2},{id:"miniM1",off:-1},{id:"miniM0",off:0},{id:"miniP1",off:1},{id:"miniP2",off:2}];
   slots.forEach(s=>{
-    const dt = new Date(y, m + s.off, 1);
-    renderMiniMonth(s.id, dt.getFullYear(), dt.getMonth(), focus);
+    const dt=new Date(y,m+s.off,1);
+    renderMiniMonth(s.id,dt.getFullYear(),dt.getMonth(),focus);
   });
 }
-
 function wireMiniMonthNav(){
-  const prev = document.getElementById("mmPrev");
-  const next = document.getElementById("mmNext");
-
+  const prev=document.getElementById("mmPrev");
+  const next=document.getElementById("mmNext");
   if(prev && !prev.dataset.wired){
-    prev.addEventListener("click", ()=>{
+    prev.addEventListener("click",()=>{
       if(!_cal) return;
       const f=_cal.getDate();
-      _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()-1, 1));
-      setTimeout(updateMiniMonths, 0);
+      _cal.gotoDate(new Date(f.getFullYear(),f.getMonth()-1,1));
+      setTimeout(updateMiniMonths,0);
     });
     prev.dataset.wired="1";
   }
   if(next && !next.dataset.wired){
-    next.addEventListener("click", ()=>{
+    next.addEventListener("click",()=>{
       if(!_cal) return;
       const f=_cal.getDate();
-      _cal.gotoDate(new Date(f.getFullYear(), f.getMonth()+1, 1));
-      setTimeout(updateMiniMonths, 0);
+      _cal.gotoDate(new Date(f.getFullYear(),f.getMonth()+1,1));
+      setTimeout(updateMiniMonths,0);
     });
     next.dataset.wired="1";
   }
 }
-
 function startCalendar(){
-  const calEl = document.getElementById("calendar");
-  if (!calEl || _cal) return;
-
-  _cal = new FullCalendar.Calendar(calEl, {
-    datesSet(){ setTimeout(updateMiniMonths, 0); },
-    initialView: "dayGridMonth",
-    dayMaxEventRows: true,
-    moreLinkClick: "popover",
-    height: "100%",
-    expandRows: true,
-    headerToolbar: { left:"prev,next today", center:"title", right:"dayGridMonth,timeGridWeek,timeGridDay" },
-    selectable: true,
-    editable: true,
-    nowIndicator: true,
-    events: loadCalEvents(),
+  const calEl=document.getElementById("calendar");
+  if(!calEl || _cal) return;
+  _cal=new FullCalendar.Calendar(calEl,{
+    datesSet(){ setTimeout(updateMiniMonths,0); },
+    initialView:"dayGridMonth",
+    dayMaxEventRows:true,
+    moreLinkClick:"popover",
+    height:"100%",
+    expandRows:true,
+    headerToolbar:{left:"prev,next today",center:"title",right:"dayGridMonth,timeGridWeek,timeGridDay"},
+    selectable:true,
+    editable:true,
+    nowIndicator:true,
+    events:loadCalEvents(),
     select(info){
-      const t = prompt("Event title:");
-      if (t) _cal.addEvent({ title: t, start: info.startStr, end: info.endStr, allDay: info.allDay });
+      const t=prompt("Event title:");
+      if(t) _cal.addEvent({title:t,start:info.startStr,end:info.endStr,allDay:info.allDay});
       saveCalEvents(_cal);
     },
     eventClick(info){
-      if (confirm("Delete this event?")) info.event.remove();
+      if(confirm("Delete this event?")) info.event.remove();
       saveCalEvents(_cal);
     },
     eventChange(){ saveCalEvents(_cal); }
   });
-
   _cal.render();
   wireMiniMonthNav();
   updateMiniMonths();
-
-  const btnToday = document.getElementById("btnToday");
-  if (btnToday) btnToday.addEventListener("click", () => _cal.today());
+  const btnToday=document.getElementById("btnToday");
+  if(btnToday) btnToday.addEventListener("click",()=>_cal.today());
 }
 
 /* boot */
+/* LLT_MANAGE_WIRE_V5 (single source of truth) */
+(function(){
+  const btn = document.getElementById("btnManageEquipment");
+  const backdrop = document.getElementById("manageBackdrop");
+  const close = document.getElementById("manageClose");
+  const cancel = document.getElementById("manageCancel");
+  const hint = document.getElementById("manageHint");
+  const search = document.getElementById("mgSearch");
+  const status = document.getElementById("mgStatus");
+  const cat = document.getElementById("mgCategory");
+  const catList = document.getElementById("mgCategoryList");
+  const list = document.getElementById("mgList");
+
+  let rows = [];
+
+  function setHint(t){ if(hint) hint.textContent = String(t || ""); }
+
+  function openModal(){
+    if(!backdrop) return;
+    backdrop.style.display = "flex";
+    backdrop.setAttribute("aria-hidden","false");
+    setHint("Loading...");
+    if(search) search.value = "";
+    if(status) status.value = "All";
+    if(cat) cat.value = "All";
+    setTimeout(()=> search?.focus(), 0);
+    load();
+  }
+
+  function closeModal(){
+    if(!backdrop) return;
+    backdrop.style.display = "none";
+    backdrop.setAttribute("aria-hidden","true");
+  }
+
+  function buildCats(){
+  if(!cat) return;
+  const set = new Set();
+  for(const r of rows){
+    const v = String(r.category || "").trim();
+    if(v) set.add(v);
+  }
+  const opts = Array.from(set).sort((a,b)=>a.localeCompare(b));
+  cat.innerHTML = `<option value="All">All</option>` + opts.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+}
+
+  function normPick(v){
+    const s = String(v || "").trim().toLowerCase();
+    return s === "" ? "all" : s;
+  }
+
+    // LLT_MANAGE_ENTER_V1
+  function clickFirstEditable(){
+    if(!list) return false;
+    const btn = list.querySelector(".js-mg-edit:not([disabled])");
+    if(!btn) return false;
+    btn.click();
+    return true;
+  }
+function render(){
+    if(!list) return;
+
+    const q = (search?.value || "").trim().toLowerCase();
+    const stPick = normPick(status?.value || "All");
+    const catPick = normPick(cat?.value || "All");
+
+    const out = rows.filter(r => {
+            if(stPick !== "all"){
+        const s = String(r.status || "").trim().toLowerCase();
+        const d = (r.days_to_due === null || r.days_to_due === undefined) ? null : Number(r.days_to_due);
+
+        if(stPick === "return due"){
+          // Return Due = In Use with due in next 0..7 days
+          if(!(s === "in use" && d !== null && d >= 0 && d <= 7)) return false;
+        }else{
+          if(s !== stPick) return false;
+        }
+      }
+      if(catPick !== "all" && String(r.category || "").trim().toLowerCase() !== catPick) return false;
+
+      if(q){
+        const hay = [r.asset_id, r.name, r.category, r.condition, r.checked_out_to, r.site]
+          .map(x => String(x || "").toLowerCase()).join(" | ");
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if(!out.length){
+      list.innerHTML = `<div style="padding:12px;color:#cfcfcf;font-size:12px;">No results.</div>`;
+      return;
+    }
+
+    list.innerHTML = out.map(r => {
+      const asset = esc(r.asset_id || "");
+      const name = esc(r.name || "");
+      const catx = esc(r.category || "");
+      const cond = esc(r.condition || "");
+      const st = esc(r.status || "");
+      const editable = _isAdmin || (String(r.status || "").trim().toLowerCase() === "available");
+      const who = esc(r.checked_out_to || "");
+      const site = esc(r.site || "");
+      const due = r.expected_return_at ? fmtDateShort(r.expected_return_at) : "";
+
+      const line2 = [catx, cond].filter(Boolean).join(" • ");
+      const line3 = [
+        st ? `Status: ${st}` : "",
+        who ? `To: ${who}` : "",
+        site ? `Site: ${site}` : "",
+        due ? `Due: ${esc(due)}` : ""
+      ].filter(Boolean).join("   |   ");
+
+      return `
+        <div class="mg-row">
+          <div class="mg-left">
+            <div class="mg-id">${asset}</div>
+            <div class="mg-name">${name}</div>
+            <div class="mg-meta">${esc(line2)}</div>
+            <div class="mg-meta">${esc(line3)}</div>
+          </div>
+          <div class="mg-actions">
+            <button type="button" class="mini-btn js-mg-edit" data-asset="${asset}" ${editable ? "" : "disabled"} title="${editable ? "" : "Cannot edit while checked out"}">
+              <i class="fas fa-pen"></i> Edit
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function load(){
+    try{
+      const { data, error } = await sb
+        .from("equipment_status")
+        .select("asset_id,name,category,condition,status,days_to_due,checked_out_to,site,expected_return_at")
+        .order("asset_id",{ascending:true});
+
+      if(error) throw error;
+      rows = Array.isArray(data) ? data : [];
+      buildCats();
+      setHint("");
+      render();
+    }catch(err){
+      console.error(err);
+      setHint(err?.message || "Failed to load equipment list.");
+      if(list) list.innerHTML = "";
+    }
+  }
+
+  // Edit click (delegated)
+  list?.addEventListener("click", async (e)=>{
+    const b = e.target.closest(".js-mg-edit");
+    if(!b) return;
+    const asset = b.getAttribute("data-asset");
+    if(!asset) return;
+
+    try{
+      closeModal();
+
+      openEquipModal("edit");
+      eq.hint.textContent = "Loading...";
+      eq.save.disabled = true;
+
+      const equip = await loadEquipmentByAssetId(asset);
+
+      _equipRow = equip;
+      _equipOrigAssetId = equip.asset_id;
+
+      eq.assetId.value = equip.asset_id || "";
+      eq.name.value = equip.name || "";
+      eq.category.value = equip.category || "";
+      eq.condition.value = equip.condition || "";
+      eq.notes.value = equip.notes || "";
+
+      eq.hint.textContent = "";
+      eq.save.disabled = false;
+    }catch(err){
+      console.error(err);
+    }
+  });
+
+  // wiring
+  btn?.addEventListener("click", openModal);
+  close?.addEventListener("click", closeModal);
+  cancel?.addEventListener("click", closeModal);
+  backdrop?.addEventListener("click", (e)=>{ if(e.target === backdrop) closeModal(); });
+
+  search?.addEventListener("input", render);
+  status?.addEventListener("input", render);
+  cat?.addEventListener("input", render);
+})();
 applyBranding();
 enforceAuthGate();
 </script>
-
 </body>
 </html>
-'@
 
-Set-Content -Path $path -Value $c -Encoding UTF8
 
-# VERIFY: confirm Return workflow markers exist
-Select-String -Path .\index.html -Pattern "Return Asset","js-return","return_condition" | Select-Object -First 50
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
