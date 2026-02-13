@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Long Line Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fas fa-hard-hat"></i>
+          <span>Long Line Tracker</span>
+        </div>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></li>
+        <li class="nav-item" data-page="calendar"><i class="fas fa-calendar-alt"></i><span>Calendar</span></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="dashboard-page" class="page active">
+        <h2>Dashboard</h2>
+        <p>This is your dashboard.</p>
+      </div>
+
+      <div id="calendar-page" class="page" style="display:none;">
+        <h2><i class="fas fa-calendar-alt"></i> Schedule Calendar</h2>
+        <div id="calendar"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+  <script>
+    // Tab navigation logic
+    document.addEventListener("DOMContentLoaded", () => {
+      const navItems = document.querySelectorAll(".nav-item");
+      const pages = document.querySelectorAll(".page");
+
+      navItems.forEach(item => {
+        item.addEventListener("click", () => {
+          const target = item.getAttribute("data-page") + "-page";
+
+          navItems.forEach(i => i.classList.remove("active"));
+          pages.forEach(p => p.style.display = "none");
+
+          item.classList.add("active");
+          document.getElementById(target).style.display = "block";
+
+          if (target === "calendar-page") initializeCalendar();
+        });
+      });
+    });
+
+    // Initialize FullCalendar
+    function initializeCalendar() {
+      const calendarEl = document.getElementById("calendar");
+      if (!calendarEl.dataset.initialized) {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          editable: true,
+          selectable: true,
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay"
+          },
+          select: function(info) {
+            const title = prompt("Event title:");
+            if (title) {
+              calendar.addEvent({
+                title: title,
+                start: info.startStr,
+                end: info.endStr,
+                allDay: info.allDay
+              });
+            }
+            calendar.unselect();
+          },
+          eventClick: function(info) {
+            if (confirm("Delete this event?")) {
+              info.event.remove();
+            }
+          }
+        });
+        calendar.render();
+        calendarEl.dataset.initialized = "true";
+      }
+    }
+  </script>
+</body>
+</html>

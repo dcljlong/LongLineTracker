@@ -1,0 +1,72 @@
+﻿body {
+margin:0;
+font-family: system-ui, -apple-system, Segoe UI, Roboto;
+background:#f6f7fb;
+color:#111827;
+}
+
+.sidebar {
+width:240px;
+background:#ffffff;
+border-right:1px solid #e5e7eb;
+}
+
+.main-content {
+padding:24px;
+}
+
+.status-grid {
+display:grid;
+grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+gap:20px;
+}
+
+.status-column {
+background:#ffffff;
+border:1px solid #e5e7eb;
+border-radius:14px;
+box-shadow:0 8px 24px rgba(17,24,39,0.08);
+padding:16px;
+}
+
+.column-header {
+font-weight:600;
+display:flex;
+justify-content:space-between;
+margin-bottom:12px;
+}
+
+.card-list {
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.asset-card {
+background:#ffffff;
+border:1px solid #e5e7eb;
+border-left:6px solid #2563eb;
+border-radius:12px;
+padding:10px 12px;
+box-shadow:0 4px 10px rgba(17,24,39,0.06);
+}
+
+.calendar-card {
+background:#ffffff;
+padding:20px;
+border-radius:14px;
+border:1px solid #e5e7eb;
+box-shadow:0 8px 24px rgba(17,24,39,0.08);
+}
+
+.fc .fc-button {
+background:#ffffff;
+border:1px solid #e5e7eb;
+color:#111827;
+}
+
+.fc .fc-button-active {
+background:#2563eb;
+color:#ffffff;
+border:none;
+}

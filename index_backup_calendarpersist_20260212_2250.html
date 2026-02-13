@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Long Line Tracker</title>
+
+<link rel="icon" href="./favicon.ico" />
+<link rel="stylesheet" href="./style.css" />
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Slim rail -->
+  <aside class="rail">
+
+    <!-- DEV MARK (max for column, independent from green) -->
+    <div class="rail-dev" title="Long Line Tracker">
+      <img class="rail-dev-logo" src="./app-logo.png" alt="Long Line Tracker logo" />
+      <div class="rail-dev-name">LLT</div>
+    </div>
+
+    <!-- HOME BUTTON (green hardhat = Dashboard) -->
+    <button class="rail-home is-active" data-page="dashboard" title="Home / Dashboard">
+      <i class="fas fa-hard-hat"></i>
+    </button>
+
+    <!-- Only ONE extra nav item in rail: Calendar (remove duplicate Dashboard button) -->
+    <button class="rail-btn" data-page="calendar" title="Calendar">
+      <i class="fas fa-calendar-alt"></i>
+    </button>
+
+    <div class="rail-spacer"></div>
+
+    <div class="rail-badge" title="Company">
+      <span id="railBadge">CU</span>
+    </div>
+  </aside>
+
+  <div class="app-main">
+
+    <!-- Top header -->
+    <header class="topbar">
+
+      <!-- Company logo only (tight frame) -->
+      <div class="topbar-left">
+        <div class="company-logo-wrap" aria-label="Company logo">
+          <img id="companyLogo" class="company-logo" src="./company-logo.png" alt="Company logo" />
+        </div>
+      </div>
+
+      <!-- Primary navigation (single source of truth for tabs) -->
+      <nav class="top-tabs" role="tablist" aria-label="Primary navigation">
+        <button class="tab is-active" data-page="dashboard">
+          <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </button>
+        <button class="tab" data-page="calendar">
+          <i class="fas fa-calendar-alt"></i><span>Calendar</span>
+        </button>
+      </nav>
+
+      <div class="topbar-right">
+        <div class="clock">
+          <i class="fas fa-clock"></i>
+          <span id="liveDate">--</span>
+        </div>
+
+        <div class="header-kpis" aria-label="Header KPIs">
+          <div class="hkpi">
+            <div class="hkpi-num" id="hk_total">0</div>
+            <div class="hkpi-lbl">Assets</div>
+          </div>
+          <div class="hkpi warn">
+            <div class="hkpi-num" id="hk_due">0</div>
+            <div class="hkpi-lbl">Due</div>
+          </div>
+          <div class="hkpi danger">
+            <div class="hkpi-num" id="hk_overdue">0</div>
+            <div class="hkpi-lbl">Overdue</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <section id="dashboard-page" class="page is-active">
+        <div class="page-head">
+          <h2>Operations Dashboard</h2>
+          <div class="page-actions">
+            <div class="search">
+              <i class="fas fa-magnifying-glass"></i>
+              <input id="quickSearch" type="text" placeholder="Search assets (name / ID / person)..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-boxes-stacked"></i></span><span class="kpi-title">Total Equipment</span></div>
+            <div class="kpi-value" id="k_total">0</div>
+            <div class="kpi-foot">All tracked assets</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-person-digging"></i></span><span class="kpi-title">Active Checkouts</span></div>
+            <div class="kpi-value" id="k_inuse">0</div>
+            <div class="kpi-foot">Currently assigned</div>
+          </div>
+
+          <div class="kpi-card warn">
+            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-hourglass-half"></i></span><span class="kpi-title">Due This Week</span></div>
+            <div class="kpi-value" id="k_due">0</div>
+            <div class="kpi-foot">Return window risk</div>
+          </div>
+
+          <div class="kpi-card danger">
+            <div class="kpi-top"><span class="kpi-icon"><i class="fas fa-triangle-exclamation"></i></span><span class="kpi-title">Overdue</span></div>
+            <div class="kpi-value" id="k_overdue">0</div>
+            <div class="kpi-foot">Immediate follow-up</div>
+          </div>
+        </div>
+
+        <div class="board">
+          <div class="col available">
+            <div class="col-head">
+              <div class="col-title">Available</div>
+              <div class="col-badge" id="c_available">0</div>
+            </div>
+            <div class="col-body" id="list_available"></div>
+          </div>
+
+          <div class="col inuse">
+            <div class="col-head">
+              <div class="col-title">In Use</div>
+              <div class="col-badge" id="c_inuse">0</div>
+            </div>
+            <div class="col-body" id="list_inuse"></div>
+          </div>
+
+          <div class="col returndue">
+            <div class="col-head">
+              <div class="col-title">Return Due</div>
+              <div class="col-badge" id="c_due">0</div>
+            </div>
+            <div class="col-body" id="list_due"></div>
+          </div>
+
+          <div class="col overdue">
+            <div class="col-head">
+              <div class="col-title">Overdue</div>
+              <div class="col-badge" id="c_overdue">0</div>
+            </div>
+            <div class="col-body" id="list_overdue"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section id="calendar-page" class="page">
+        <div class="page-head">
+          <h2>Schedule Calendar</h2>
+          <div class="page-actions">
+            <button class="btn" id="btnToday"><i class="fas fa-location-crosshairs"></i> Today</button>
+          </div>
+        </div>
+
+        <div class="calendar-wrap">
+          <div id="calendar"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<script>
+const BRANDING = {
+  railBadge: "CU",
+  companyLogoPath: "./company-logo.png"
+};
+
+let _cal = null;
+
+function updateClock(){
+  const now = new Date();
+  const el = document.getElementById("liveDate");
+  if (!el) return;
+
+  const fmt = new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  el.textContent = fmt.format(now);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function applyBranding(){
+  const rb = document.getElementById("railBadge");
+  if (rb) rb.textContent = BRANDING.railBadge || "CO";
+
+  const cLogo = document.getElementById("companyLogo");
+  if (cLogo) cLogo.src = BRANDING.companyLogoPath;
+}
+
+function setActivePage(page){
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
+  document.getElementById(page + "-page").classList.add("is-active");
+
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
+  document.querySelectorAll(".rail-btn").forEach(b => b.classList.toggle("is-active", b.dataset.page === page));
+  document.querySelectorAll(".rail-home").forEach(b => b.classList.toggle("is-active", page === "dashboard"));
+
+  if (page === "calendar") startCalendar();
+}
+
+document.addEventListener("click", (e) => {
+  const tab = e.target.closest(".tab");
+  const railBtn = e.target.closest("button");
+  if (tab && tab.dataset.page) setActivePage(tab.dataset.page);
+  if (railBtn && railBtn.dataset.page) setActivePage(railBtn.dataset.page);
+});
+
+function startCalendar(){
+  const calEl = document.getElementById("calendar");
+  if (!calEl || _cal) return;
+
+  _cal = new FullCalendar.Calendar(calEl, {
+    initialView: "dayGridMonth",
+    height: "auto",
+    headerToolbar: { left:"prev,next today", center:"title", right:"dayGridMonth,timeGridWeek,timeGridDay" },
+    selectable: true,
+    editable: true,
+    nowIndicator: true,
+    select(info){
+      const t = prompt("Event title:");
+      if (t) _cal.addEvent({ title: t, start: info.startStr, end: info.endStr, allDay: info.allDay });
+    },
+    eventClick(info){
+      if (confirm("Delete this event?")) info.event.remove();
+    }
+  });
+
+  _cal.render();
+
+  const btnToday = document.getElementById("btnToday");
+  if (btnToday) btnToday.addEventListener("click", () => _cal.today());
+}
+
+applyBranding();
+</script>
+
+</body>
+</html>
